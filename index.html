@@ -297,13 +297,6 @@
   }
   .verse-feature cite{color:var(--gold); font-style:normal; font-size:0.9rem;}
 
-  .verse-archive-item{
-    display:flex; justify-content:space-between; gap:20px;
-    padding:18px 0; border-bottom:1px solid var(--line);
-    font-size:0.92rem;
-  }
-  .verse-archive-item .v-ref{color:var(--gold); white-space:nowrap; font-size:0.8rem; padding-top:2px;}
-
   .timeline{margin-bottom:64px;}
   .timeline-item{
     display:grid; grid-template-columns:140px 1fr;
@@ -494,9 +487,6 @@
           <p class="loading">Loading…</p>
         </div>
 
-        <h3 style="margin:56px 0 6px; font-size:1.1rem;">Past Verses</h3>
-        <div id="verse-archive" style="margin-bottom:64px;"></div>
-
         <div class="section-head">
           <div class="eyebrow">Ask With Us</div>
           <h2>How You Can Pray for Me</h2>
@@ -652,10 +642,8 @@
 
   function renderVerses(items){
     const current = document.getElementById('verse-current');
-    const archive = document.getElementById('verse-archive');
     if(!items.length){
       current.innerHTML = '<p class="loading">No verse posted yet.</p>';
-      archive.innerHTML = '';
       return;
     }
     const first = items[0];
@@ -663,10 +651,6 @@
       '<div class="verse-feature"><span class="eyebrow">Current</span>' +
       '<blockquote>“' + esc(first.text) + '”</blockquote>' +
       '<cite>' + esc(first.ref) + '</cite></div>';
-    archive.innerHTML = items.slice(1).map(v =>
-      '<div class="verse-archive-item"><span>“' + esc(v.text) + '”</span>' +
-      '<span class="v-ref">' + esc(v.ref) + '</span></div>'
-    ).join('');
   }
 
   function renderTravels(items){
