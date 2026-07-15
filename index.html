@@ -1,0 +1,644 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cole Jaeger — That Others May Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0a1b33;
+    --navy-mid:#122a4d;
+    --navy-card:#0f2340;
+    --line: rgba(255,255,255,0.12);
+    --white:#ffffff;
+    --mist:#a9c0e0;
+    --mist-dim: #7d93b8;
+    --gold:#c9a860;
+    --crimson:#8b2332;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, var(--navy-mid), var(--navy-deep) 55%);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-weight:300;
+    min-height:100vh;
+    line-height:1.6;
+  }
+
+  h1,h2,h3,.display{
+    font-family:'Playfair Display', serif;
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+
+  a{color:inherit;}
+
+  .eyebrow{
+    text-transform:uppercase;
+    letter-spacing:0.22em;
+    font-size:0.72rem;
+    color: var(--gold);
+    font-weight:500;
+  }
+
+  #gate{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, var(--navy-mid), var(--navy-deep) 55%);
+    z-index:100;
+    padding:24px;
+  }
+  .gate-box{
+    max-width:380px; width:100%;
+    text-align:center;
+  }
+  .gate-mark{
+    width:56px; height:56px; margin:0 auto 24px;
+    opacity:0.9;
+  }
+  .gate-box h1{
+    font-size:1.5rem;
+    margin-bottom:6px;
+  }
+  .gate-sub{
+    color:var(--mist);
+    font-size:0.92rem;
+    margin-bottom:32px;
+  }
+  #gate-form{
+    display:flex; flex-direction:column; gap:14px;
+  }
+  #gate-input{
+    background: rgba(255,255,255,0.05);
+    border:1px solid var(--line);
+    color:var(--white);
+    font-family:'Inter', sans-serif;
+    font-size:1rem;
+    padding:14px 16px;
+    border-radius:6px;
+    text-align:center;
+    letter-spacing:0.02em;
+  }
+  #gate-input:focus{
+    outline:none;
+    border-color: var(--gold);
+  }
+  #gate-input::placeholder{color: var(--mist-dim);}
+  .gate-btn{
+    background: var(--gold);
+    color: var(--navy-deep);
+    border:none;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:0.95rem;
+    padding:14px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    transition: opacity 0.15s ease;
+    letter-spacing:0.02em;
+  }
+  .gate-btn:hover{opacity:0.88;}
+  .gate-error{
+    color:#e2a0a0;
+    font-size:0.85rem;
+    min-height:1.2em;
+  }
+
+  #site{display:none;}
+  #site.unlocked{display:block;}
+
+  header.site-header{
+    position:sticky; top:0; z-index:10;
+    background: rgba(10,27,51,0.88);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    max-width:1080px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 24px;
+  }
+  .brand{
+    font-family:'Playfair Display', serif;
+    font-size:1.15rem;
+    font-weight:600;
+  }
+  .brand span{color:var(--gold);}
+  nav.main-nav{
+    display:flex; gap:26px; flex-wrap:wrap;
+  }
+  nav.main-nav a{
+    text-decoration:none;
+    font-size:0.86rem;
+    color: var(--mist);
+    letter-spacing:0.02em;
+    cursor:pointer;
+    padding-bottom:4px;
+    border-bottom:1px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    background:none; border-top:none; border-left:none; border-right:none;
+    font-family:'Inter', sans-serif;
+  }
+  nav.main-nav a:hover, nav.main-nav a.active{
+    color: var(--white);
+    border-bottom-color: var(--gold);
+  }
+  .nav-toggle{display:none;}
+
+  main{max-width:1080px; margin:0 auto; padding:0 24px;}
+
+  .view{display:none; animation: fadein 0.4s ease;}
+  .view.active{display:block;}
+  @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .hero{
+    padding:88px 0 72px;
+    display:grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap:56px;
+    align-items:center;
+  }
+  .hero-copy .eyebrow{margin-bottom:18px;}
+  .hero h1{
+    font-size:clamp(2.1rem, 4vw, 3.1rem);
+    line-height:1.15;
+    margin-bottom:20px;
+  }
+  .hero .role{
+    color:var(--mist);
+    font-size:1rem;
+    margin-bottom:32px;
+  }
+  .mission-quote{
+    border-left:2px solid var(--gold);
+    padding-left:22px;
+    font-family:'Playfair Display', serif;
+    font-style:italic;
+    font-size:1.15rem;
+    line-height:1.55;
+    color:#eef2f8;
+    margin-bottom:28px;
+  }
+  .tagline{
+    text-transform:uppercase;
+    letter-spacing:0.3em;
+    font-size:0.82rem;
+    color:var(--gold);
+    font-weight:500;
+  }
+  .hero-visual{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    aspect-ratio: 4/5;
+  }
+  .hero-rays{
+    position:absolute; inset:0;
+    opacity:0.55;
+  }
+  .portrait-frame{
+    position:relative;
+    width:78%;
+    aspect-ratio: 4/5;
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background: linear-gradient(160deg, var(--navy-mid), var(--navy-card));
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    color:var(--mist-dim);
+    font-size:0.85rem;
+    padding:24px;
+  }
+
+  .cta-row{display:flex; gap:14px; margin-top:8px; flex-wrap:wrap;}
+  .btn{
+    display:inline-block;
+    padding:12px 22px;
+    border-radius:5px;
+    font-size:0.88rem;
+    font-weight:500;
+    text-decoration:none;
+    cursor:pointer;
+    letter-spacing:0.01em;
+  }
+  .btn-primary{background:var(--gold); color:var(--navy-deep);}
+  .btn-ghost{border:1px solid var(--line); color:var(--white);}
+  .btn:hover{opacity:0.88;}
+
+  .section-head{
+    padding: 56px 0 32px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:36px;
+  }
+  .section-head h2{font-size:1.9rem; margin-top:8px;}
+  .section-head p{color:var(--mist); max-width:640px; margin-top:10px; font-size:0.95rem;}
+
+  .card-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr));
+    gap:20px; margin-bottom:64px;
+  }
+  .card{
+    background: var(--navy-card);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:24px;
+  }
+  .card h3{font-size:1.05rem; margin-bottom:8px; font-weight:600;}
+  .card .meta{color:var(--gold); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:10px;}
+  .card p{color:var(--mist); font-size:0.9rem;}
+  .card a.card-link{
+    display:inline-block; margin-top:14px; font-size:0.82rem; color:var(--white);
+    border-bottom:1px solid var(--gold); padding-bottom:2px; text-decoration:none;
+  }
+
+  .verse-feature{
+    background: linear-gradient(150deg, var(--navy-mid), var(--navy-card));
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:44px 40px;
+    margin-bottom:20px;
+    text-align:center;
+  }
+  .verse-feature .eyebrow{display:block; margin-bottom:16px;}
+  .verse-feature blockquote{
+    font-family:'Playfair Display', serif;
+    font-style:italic;
+    font-size:1.5rem;
+    line-height:1.5;
+    max-width:640px;
+    margin:0 auto 14px;
+  }
+  .verse-feature cite{color:var(--gold); font-style:normal; font-size:0.9rem;}
+
+  .verse-archive-item{
+    display:flex; justify-content:space-between; gap:20px;
+    padding:18px 0; border-bottom:1px solid var(--line);
+    font-size:0.92rem;
+  }
+  .verse-archive-item .v-ref{color:var(--gold); white-space:nowrap; font-size:0.8rem; padding-top:2px;}
+
+  .timeline{margin-bottom:64px;}
+  .timeline-item{
+    display:grid; grid-template-columns:140px 1fr;
+    gap:24px; padding:26px 0; border-bottom:1px solid var(--line);
+  }
+  .timeline-item .t-date{color:var(--gold); font-size:0.85rem; padding-top:2px;}
+  .timeline-item h3{font-size:1.1rem; margin-bottom:8px;}
+  .timeline-item p{color:var(--mist); font-size:0.92rem;}
+
+  .prayer-item{
+    padding:20px 0; border-bottom:1px solid var(--line);
+    display:flex; gap:16px; align-items:flex-start;
+  }
+  .prayer-dot{
+    width:6px;height:6px; border-radius:50%; background:var(--gold);
+    margin-top:9px; flex-shrink:0;
+  }
+  .prayer-item p{font-size:0.95rem; color:#eef2f8;}
+  .prayer-item .p-date{color:var(--mist-dim); font-size:0.78rem; margin-top:4px;}
+
+  .prayer-form-note{
+    background:var(--navy-card); border:1px solid var(--line); border-radius:8px;
+    padding:26px; margin-top:8px; margin-bottom:64px; color:var(--mist); font-size:0.9rem;
+  }
+  .prayer-form-note a{color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold);}
+
+  .book-item{
+    display:grid; grid-template-columns:64px 1fr;
+    gap:20px; padding:22px 0; border-bottom:1px solid var(--line);
+  }
+  .book-cover{
+    width:64px; height:88px; border-radius:3px;
+    background: linear-gradient(160deg, var(--navy-mid), var(--navy-card));
+    border:1px solid var(--line);
+  }
+  .book-item h3{font-size:1.02rem;}
+  .book-item .b-author{color:var(--mist-dim); font-size:0.8rem; margin-bottom:8px;}
+  .book-item p{color:var(--mist); font-size:0.9rem;}
+
+  footer{
+    border-top:1px solid var(--line);
+    padding:44px 24px 60px;
+    text-align:center;
+    color:var(--mist-dim);
+    font-size:0.82rem;
+  }
+  footer .tagline{display:block; margin-bottom:14px; color:var(--gold);}
+
+  @media (max-width:760px){
+    .hero{grid-template-columns:1fr; padding-top:56px;}
+    .hero-visual{order:-1; max-width:260px; margin:0 auto;}
+    nav.main-nav{
+      display:none; flex-direction:column; gap:14px;
+      position:absolute; top:100%; left:0; right:0;
+      background: var(--navy-deep); border-bottom:1px solid var(--line);
+      padding:20px 24px;
+    }
+    nav.main-nav.open{display:flex;}
+    .nav-toggle{
+      display:block; background:none; border:1px solid var(--line);
+      color:var(--white); border-radius:5px; padding:8px 12px; cursor:pointer;
+    }
+    .timeline-item, .book-item{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+  <div id="gate">
+    <div class="gate-box">
+      <svg class="gate-mark" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="27" stroke="#c9a860" stroke-width="1"/>
+        <path d="M28 14V42M18 22H38" stroke="#c9a860" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <div class="eyebrow">Private Page</div>
+      <h1>Cole's Mission Update</h1>
+      <p class="gate-sub">This page is just for family and friends walking with Cole. Enter the password to continue.</p>
+      <form id="gate-form">
+        <input id="gate-input" type="password" placeholder="Password" autocomplete="off" />
+        <button class="gate-btn" type="submit">Enter</button>
+        <div class="gate-error" id="gate-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="site">
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">Cole <span>Jaeger</span></div>
+        <button class="nav-toggle" id="navToggle">Menu</button>
+        <nav class="main-nav" id="mainNav">
+          <a data-view="home" class="active">Home</a>
+          <a data-view="newsletters">Newsletters</a>
+          <a data-view="verses">Verse of the Week</a>
+          <a data-view="travels">Mission Trips</a>
+          <a data-view="prayer">Prayer Requests</a>
+          <a data-view="books">Books</a>
+          <a href="https://www.spo.org/support-cole-jaeger" target="_blank" rel="noopener">Support Cole ↗</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+
+      <section class="view active" id="home">
+        <div class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow">Missionary — University of Kansas</div>
+            <h1>Sent to make His love known.</h1>
+            <div class="role">Cole Jaeger &middot; Saint Paul's Outreach</div>
+            <blockquote class="mission-quote">
+              "I want to be a witness to the love of Christ which I have received and help others know His love for them that they may do the same."
+            </blockquote>
+            <div class="tagline">That others may live</div>
+            <div class="cta-row" style="margin-top:28px;">
+              <a class="btn btn-primary" href="https://www.spo.org/support-cole-jaeger" target="_blank" rel="noopener">Support the Mission</a>
+              <a class="btn btn-ghost" data-view="newsletters">Read the Latest Update</a>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <svg class="hero-rays" viewBox="0 0 300 300">
+              <g stroke="#c9a860" stroke-width="1" opacity="0.5">
+                <circle cx="150" cy="150" r="120" fill="none"/>
+                <circle cx="150" cy="150" r="140" fill="none" opacity="0.5"/>
+                <line x1="150" y1="10" x2="150" y2="35"/>
+                <line x1="150" y1="265" x2="150" y2="290"/>
+                <line x1="10" y1="150" x2="35" y2="150"/>
+                <line x1="265" y1="150" x2="290" y2="150"/>
+                <line x1="45" y1="45" x2="63" y2="63"/>
+                <line x1="255" y1="45" x2="237" y2="63"/>
+                <line x1="45" y1="255" x2="63" y2="237"/>
+                <line x1="255" y1="255" x2="237" y2="237"/>
+              </g>
+            </svg>
+            <div class="portrait-frame">
+              Swap this for Cole's missionary photo<br><br>(recommended: portrait orientation, 4:5)
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="newsletters">
+        <div class="section-head">
+          <div class="eyebrow">Archive</div>
+          <h2>Newsletters</h2>
+          <p>A monthly look at what God is doing on campus — new students, retreats, and answered prayers.</p>
+        </div>
+        <div class="card-grid">
+          <div class="card">
+            <div class="meta">June 2026</div>
+            <h3>Finishing the Year Strong</h3>
+            <p>End-of-year highlights from campus ministry, a recap of the spring retreat, and summer plans.</p>
+            <a class="card-link" href="#">Read update →</a>
+          </div>
+          <div class="card">
+            <div class="meta">May 2026</div>
+            <h3>Baptisms & Send-Offs</h3>
+            <p>Two students were baptized this month, and the graduating seniors were commissioned for mission.</p>
+            <a class="card-link" href="#">Read update →</a>
+          </div>
+          <div class="card">
+            <div class="meta">April 2026</div>
+            <h3>Holy Week on Campus</h3>
+            <p>How the household lived out Triduum together, plus a few answered prayers from Lent.</p>
+            <a class="card-link" href="#">Read update →</a>
+          </div>
+          <div class="card">
+            <div class="meta">March 2026</div>
+            <h3>Spring Retreat Recap</h3>
+            <p>60 students, one weekend, and a lot of good confessions. Photos and testimonies inside.</p>
+            <a class="card-link" href="#">Read update →</a>
+          </div>
+        </div>
+        <p style="color:var(--mist-dim); font-size:0.82rem; margin-top:-40px; margin-bottom:60px;">Placeholder entries — replace with real archive links or PDFs as newsletters go out.</p>
+      </section>
+
+      <section class="view" id="verses">
+        <div class="section-head">
+          <div class="eyebrow">This Week</div>
+          <h2>Verse of the Week</h2>
+          <p>A verse Cole is praying with and sharing with students this week.</p>
+        </div>
+        <div class="verse-feature">
+          <span class="eyebrow">Current</span>
+          <blockquote>"I have called you by name, you are mine."</blockquote>
+          Isaiah 43:1
+        </div>
+
+        <h3 style="margin:56px 0 6px; font-size:1.1rem;">Past Verses</h3>
+        <div style="margin-bottom:64px;">
+          <div class="verse-archive-item">
+            <span>"Be still, and know that I am God."</span>
+            <span class="v-ref">Psalm 46:10</span>
+          </div>
+          <div class="verse-archive-item">
+            <span>"For I know the plans I have for you, declares the Lord."</span>
+            <span class="v-ref">Jeremiah 29:11</span>
+          </div>
+          <div class="verse-archive-item">
+            <span>"Go therefore and make disciples of all nations."</span>
+            <span class="v-ref">Matthew 28:19</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="travels">
+        <div class="section-head">
+          <div class="eyebrow">On the Road</div>
+          <h2>Mission Trips, Retreats & Travel</h2>
+          <p>Where the mission has taken Cole this year — and what God did there.</p>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="t-date">Jul 2026</div>
+            <div>
+              <h3>SPO National Training — Mendota Heights, MN</h3>
+              <p>A week of formation with missionaries from every SPO chapter before the new school year begins.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="t-date">Mar 2026</div>
+            <div>
+              <h3>KU Spring Retreat — Rock Springs, KS</h3>
+              <p>Led small groups and gave a talk on identity in Christ for 60 students over the weekend.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="t-date">Jan 2026</div>
+            <div>
+              <h3>SEEK Conference — St. Louis, MO</h3>
+              <p>Brought a group of KU students to SEEK for a week of talks, Adoration, and confession lines that didn't quit.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="prayer">
+        <div class="section-head">
+          <div class="eyebrow">Ask With Us</div>
+          <h2>Prayer Requests</h2>
+          <p>Specific things Cole is asking prayer for right now.</p>
+        </div>
+        <div style="margin-bottom:8px;">
+          <div class="prayer-item">
+            <div class="prayer-dot"></div>
+            <div>
+              <p>For three students discerning whether to apply as missionaries next year.</p>
+              <div class="p-date">Updated July 2026</div>
+            </div>
+          </div>
+          <div class="prayer-item">
+            <div class="prayer-dot"></div>
+            <div>
+              <p>For safe travel and good conversations at SPO National Training.</p>
+              <div class="p-date">Updated July 2026</div>
+            </div>
+          </div>
+          <div class="prayer-item">
+            <div class="prayer-dot"></div>
+            <div>
+              <p>For provision — a few monthly supporters recently had to step back.</p>
+              <div class="p-date">Updated June 2026</div>
+            </div>
+          </div>
+        </div>
+        <div class="prayer-form-note">
+          Have a prayer intention? Email it to <a href="mailto:cole@example.com">cole@example.com</a> and it may be added here. (Swap in Cole's real contact — a real submission form can be added once this moves into Claude Code.)
+        </div>
+      </section>
+
+      <section class="view" id="books">
+        <div class="section-head">
+          <div class="eyebrow">Reading List</div>
+          <h2>Spiritual Books I've Read</h2>
+          <p>Books that have shaped Cole's faith, with a few thoughts on each.</p>
+        </div>
+        <div style="margin-bottom:64px;">
+          <div class="book-item">
+            <div class="book-cover"></div>
+            <div>
+              <h3>Introduction to the Devout Life</h3>
+              <div class="b-author">St. Francis de Sales</div>
+              <p>Practical and gentle — a good companion for anyone trying to grow in holiness in the middle of a busy, ordinary life.</p>
+            </div>
+          </div>
+          <div class="book-item">
+            <div class="book-cover"></div>
+            <div>
+              <h3>He Leadeth Me</h3>
+              <div class="b-author">Fr. Walter Ciszek, S.J.</div>
+              <p>A hard, honest account of finding God's presence in suffering. Reread this before every mission trip.</p>
+            </div>
+          </div>
+          <div class="book-item">
+            <div class="book-cover"></div>
+            <div>
+              <h3>The Screwtape Letters</h3>
+              <div class="b-author">C.S. Lewis</div>
+              <p>Sharp, funny, and uncomfortably accurate about the small ways we talk ourselves out of holiness.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      <span class="tagline">That Others May Live</span>
+      Cole Jaeger &middot; Missionary, Saint Paul's Outreach &middot; University of Kansas
+    </footer>
+  </div>
+
+<script>
+  const SITE_PASSWORD = "GoJayhawks26!";
+  const gate = document.getElementById('gate');
+  const site = document.getElementById('site');
+  const gateForm = document.getElementById('gate-form');
+  const gateInput = document.getElementById('gate-input');
+  const gateError = document.getElementById('gate-error');
+
+  gateForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(gateInput.value === SITE_PASSWORD){
+      gate.style.display = 'none';
+      site.classList.add('unlocked');
+    } else {
+      gateError.textContent = "That password isn't right — try again.";
+      gateInput.value = '';
+      gateInput.focus();
+    }
+  });
+
+  const navLinks = document.querySelectorAll('nav.main-nav a[data-view]');
+  const ctaLinks = document.querySelectorAll('a[data-view]');
+  const views = document.querySelectorAll('.view');
+
+  function showView(name){
+    views.forEach(v => v.classList.toggle('active', v.id === name));
+    navLinks.forEach(l => l.classList.toggle('active', l.dataset.view === name));
+    window.scrollTo({top:0, behavior:'smooth'});
+    document.getElementById('mainNav').classList.remove('open');
+  }
+
+  ctaLinks.forEach(link => {
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      showView(this.dataset.view);
+    });
+  });
+
+  document.getElementById('navToggle').addEventListener('click', function(){
+    document.getElementById('mainNav').classList.toggle('open');
+  });
+</script>
+
+</body>
+</html>
