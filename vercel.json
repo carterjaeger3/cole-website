@@ -1,8 +1,8 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/books/:id", "destination": "/detail.html" },
-    { "source": "/travels/:id", "destination": "/detail.html" },
-    { "source": "/newsletters/:id", "destination": "/detail.html" }
+    { "source": "/books/:id", "destination": "/detail" },
+    { "source": "/travels/:id", "destination": "/detail" },
+    { "source": "/newsletters/:id", "destination": "/detail" }
   ]
 }
