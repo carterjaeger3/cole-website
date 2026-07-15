@@ -313,6 +313,14 @@
   }
   .prayer-form-note a{color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold);}
   .prayer-form-note h3{font-size:1.15rem; color:var(--white); margin-bottom:8px; font-weight:600;}
+  .privacy-note{
+    background: rgba(63,155,109,0.1); border:1px solid rgba(63,155,109,0.35); border-radius:6px;
+    padding:10px 14px; font-size:0.85rem; color:#bfe3cd; margin-bottom:4px;
+  }
+  .anon-row{
+    display:flex; align-items:center; gap:9px; font-size:0.87rem; color:var(--mist); cursor:pointer;
+  }
+  .anon-row input[type="checkbox"]{width:auto; accent-color:var(--gold); cursor:pointer;}
   .prayer-form-note form{display:flex; flex-direction:column; gap:12px; margin-top:18px;}
   .prayer-form-note input, .prayer-form-note textarea{
     background: rgba(255,255,255,0.05); border:1px solid var(--line); color:var(--white);
@@ -493,11 +501,16 @@
         </div>
         <div class="prayer-form-note">
           <h3>Submit a Prayer Intention</h3>
-          <p>Is there something you'd like Cole to pray for? Share it below. Your intention goes privately to Cole — it won't be posted on this page.</p>
+          <p>Is there something you'd like Cole to pray for? Share it below.</p>
+          <p class="privacy-note">🔒 No one but Cole will ever see this. Your intention is private and is never posted on the site.</p>
           <form id="prayer-submit-form" autocomplete="off">
             <input name="name" type="text" placeholder="Your name (optional)" maxlength="100" />
             <input name="contact" type="text" placeholder="Email or phone, if you'd like a reply (optional)" maxlength="150" />
             <textarea name="intention" placeholder="How can we pray for you?" maxlength="2000" required></textarea>
+            <label class="anon-row">
+              <input type="checkbox" name="anonymous" id="anon-check" />
+              <span>Submit anonymously (don't include my name or contact)</span>
+            </label>
             <input name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp" />
             <button type="submit" class="btn btn-primary">Send intention</button>
             <div class="submit-msg" id="prayer-submit-msg" role="status" aria-live="polite"></div>
@@ -657,6 +670,7 @@
         name: fd.get('name') || '',
         contact: fd.get('contact') || '',
         intention: fd.get('intention') || '',
+        anonymous: fd.get('anonymous') === 'on',
         website: fd.get('website') || ''
       };
       btn.disabled = true;

@@ -1,18 +1,13 @@
-import { COLLECTIONS, getCollection, setCollection } from '../lib/store.js';
-import { makeId, readBody } from '../lib/http.js';
+import { COLLECTIONS, getCollection, addItem, updateItem, deleteItem } from '../lib/store.js';
+import { readBody } from '../lib/http.js';
 
 // The private prayer-intention inbox. Admin can read (list) and delete these,
 // but never add/edit them — they're created only via the public /api/submit.
 const ADMIN_READABLE = [...COLLECTIONS, 'submissions'];
 
 // Insert new items at the front for everything except books, which read as a
-// running reading list (oldest first).
-function prepends(collection) {
-  return collection !== 'books';
-}
-
-// Keep only the fields we expect for each collection, and coerce to strings so a
-// malformed request can't stuff arbitrary structures into storage.
+// running reading list (oldest first). Ordering itself is handled by the
+// store layer (created_at ascending/descending); this just documents intent.
 function cleanItem(collection, item) {
   const s = (v) => (v == null ? '' : String(v).trim());
   switch (collection) {
@@ -77,7 +72,7 @@ export default async function handler(req, res) {
       console.error('admin list error:', err);
       const configErr = /not configured/i.test(err.message || '');
       res.status(configErr ? 503 : 500).json({
-        error: configErr ? 'Storage is not set up yet. Finish the Upstash Redis setup first.' : 'Failed to load.',
+        error: configErr ? 'Storage is not set up yet. Finish the Supabase setup first.' : 'Failed to load.',
       });
     }
     return;
@@ -92,25 +87,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    let list = await getCollection(collection);
-
     if (action === 'add') {
-      const newItem = { id: makeId(), ...cleanItem(collection, item || {}) };
-      list = prepends(collection) ? [newItem, ...list] : [...list, newItem];
+      await addItem(collection, cleanItem(collection, item || {}));
     } else if (action === 'update') {
       if (!id) {
         res.status(400).json({ error: 'Missing id.' });
         return;
       }
-      let found = false;
-      list = list.map((entry) => {
-        if (entry.id === id) {
-          found = true;
-          return { id, ...cleanItem(collection, item || {}) };
-        }
-        return entry;
-      });
-      if (!found) {
+      const updated = await updateItem(collection, id, cleanItem(collection, item || {}));
+      if (!updated) {
         res.status(404).json({ error: 'Item not found.' });
         return;
       }
@@ -119,18 +104,18 @@ export default async function handler(req, res) {
         res.status(400).json({ error: 'Missing id.' });
         return;
       }
-      list = list.filter((entry) => entry.id !== id);
+      await deleteItem(collection, id);
     } else {
       res.status(400).json({ error: 'Unknown action.' });
       return;
     }
 
-    await setCollection(collection, list);
-    res.status(200).json({ ok: true, collection, items: list });
+    const items = await getCollection(collection);
+    res.status(200).json({ ok: true, collection, items });
   } catch (err) {
     console.error('admin error:', err);
     if (/not configured/i.test(err.message || '')) {
-      res.status(503).json({ error: 'Storage is not set up yet, so changes can’t be saved. Finish the Upstash Redis setup first.' });
+      res.status(503).json({ error: 'Storage is not set up yet, so changes can’t be saved. Finish the Supabase setup first.' });
       return;
     }
     res.status(500).json({ error: 'Something went wrong saving your change.' });

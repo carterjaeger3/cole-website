@@ -353,7 +353,7 @@
   // ---- Rendering the lists ----
   const RENDERERS = {
     submissions: (item) => ({
-      meta: [item.name ? esc(item.name) : 'Anonymous', item.contact ? esc(item.contact) : '', fmtDate(item.date)]
+      meta: [item.anonymous ? 'Anonymous' : (esc(item.name) || 'No name given'), item.anonymous ? '' : esc(item.contact), fmtDate(item.created_at)]
         .filter(Boolean).join('  ·  '),
       title: esc(item.intention),
       detail: '',
