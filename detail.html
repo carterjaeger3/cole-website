@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cole Jaeger — That Others May Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0a1b33;
+    --navy-mid:#122a4d;
+    --navy-card:#0f2340;
+    --line: rgba(255,255,255,0.12);
+    --white:#ffffff;
+    --mist:#a9c0e0;
+    --mist-dim: #7d93b8;
+    --gold:#c9a860;
+    --crimson:#8b2332;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, var(--navy-mid), var(--navy-deep) 55%);
+    color: var(--white);
+    font-family:'Inter', sans-serif;
+    font-weight:300;
+    min-height:100vh;
+    line-height:1.6;
+  }
+  h1,h2,h3{font-family:'Playfair Display', serif; font-weight:600; letter-spacing:0.01em;}
+  a{color:inherit;}
+  .eyebrow{text-transform:uppercase; letter-spacing:0.22em; font-size:0.72rem; color:var(--gold); font-weight:500;}
+
+  #gate{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, var(--navy-mid), var(--navy-deep) 55%);
+    z-index:100; padding:24px;
+  }
+  .gate-box{max-width:380px; width:100%; text-align:center;}
+  .gate-mark{width:56px; height:56px; margin:0 auto 24px; opacity:0.9;}
+  .gate-box h1{font-size:1.5rem; margin-bottom:6px;}
+  .gate-sub{color:var(--mist); font-size:0.92rem; margin-bottom:32px;}
+  #gate-form{display:flex; flex-direction:column; gap:14px;}
+  #gate-input{
+    background: rgba(255,255,255,0.05); border:1px solid var(--line); color:var(--white);
+    font-family:'Inter', sans-serif; font-size:1rem; padding:14px 16px; border-radius:6px;
+    text-align:center; letter-spacing:0.02em;
+  }
+  #gate-input:focus{outline:none; border-color:var(--gold);}
+  #gate-input::placeholder{color:var(--mist-dim);}
+  .gate-btn{
+    background:var(--gold); color:var(--navy-deep); border:none; font-family:'Inter', sans-serif;
+    font-weight:600; font-size:0.95rem; padding:14px 16px; border-radius:6px; cursor:pointer;
+    transition:opacity 0.15s ease; letter-spacing:0.02em;
+  }
+  .gate-btn:hover{opacity:0.88;}
+  .gate-error{color:#e2a0a0; font-size:0.85rem; min-height:1.2em;}
+
+  #site{display:none;}
+  #site.unlocked{display:block;}
+
+  header.site-header{
+    position:sticky; top:0; z-index:10;
+    background: rgba(10,27,51,0.88);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    max-width:1080px; margin:0 auto;
+    display:grid; grid-template-columns:auto 1fr auto auto;
+    align-items:center; gap:16px;
+    padding:18px 24px;
+  }
+  .brand{grid-column:1; font-family:'Playfair Display', serif; font-size:1.15rem; font-weight:600;}
+  .brand span{color:var(--gold);}
+  nav.main-nav{grid-column:2; justify-self:center; display:flex; gap:26px; flex-wrap:wrap;}
+  nav.main-nav a{
+    text-decoration:none; font-size:0.86rem; color:var(--mist); letter-spacing:0.02em;
+    padding-bottom:4px; border-bottom:1px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease; font-family:'Inter', sans-serif;
+  }
+  nav.main-nav a:hover{color:var(--white); border-bottom-color:var(--gold);}
+  .support-inline{display:none;}
+  .support-link{
+    grid-column:3; justify-self:end; text-decoration:none; font-size:0.86rem; color:var(--mist);
+    letter-spacing:0.02em; white-space:nowrap; padding-bottom:4px; border-bottom:1px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease; font-family:'Inter', sans-serif;
+  }
+  .support-link:hover{color:var(--white); border-bottom-color:var(--gold);}
+  .nav-toggle{grid-column:4; display:none;}
+
+  main{max-width:1080px; margin:0 auto; padding:0 24px;}
+
+  .detail{max-width:680px; margin:0 auto; padding:56px 0 80px;}
+  .detail-back{
+    display:inline-block; color:var(--mist); text-decoration:none; font-size:0.85rem;
+    margin-bottom:28px; border-bottom:1px solid transparent; transition:border-color 0.15s ease, color 0.15s ease;
+  }
+  .detail-back:hover{color:var(--white); border-bottom-color:var(--gold);}
+  .detail-image{
+    display:block; max-width:360px; width:100%; margin:0 auto 32px;
+    border-radius:10px; border:1px solid var(--line);
+  }
+  .detail-title{font-size:2.1rem; line-height:1.2; margin:10px 0 8px;}
+  .detail-meta{color:var(--mist-dim); font-size:0.9rem; margin-bottom:28px;}
+  .detail-content{
+    color:#eef2f8; font-size:1.02rem; line-height:1.8; white-space:pre-wrap; margin-bottom:28px;
+  }
+  .detail-external{
+    display:inline-block; color:var(--gold); text-decoration:none; font-size:0.9rem;
+    border-bottom:1px solid var(--gold); padding-bottom:2px;
+  }
+  .detail-state{color:var(--mist-dim); font-size:0.95rem; padding:40px 0;}
+
+  footer{
+    border-top:1px solid var(--line); padding:44px 24px 60px; text-align:center;
+    color:var(--mist-dim); font-size:0.82rem;
+  }
+  footer .tagline{display:block; margin-bottom:14px; color:var(--gold);}
+
+  @media (max-width:760px){
+    nav.main-nav{
+      display:none; flex-direction:column; gap:14px;
+      position:absolute; top:100%; left:0; right:0;
+      background: var(--navy-deep); border-bottom:1px solid var(--line);
+      padding:20px 24px;
+    }
+    nav.main-nav.open{display:flex;}
+    .nav-toggle{
+      display:block; background:none; border:1px solid var(--line);
+      color:var(--white); border-radius:5px; padding:8px 12px; cursor:pointer;
+    }
+    .support-inline{display:block;}
+    .support-link{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <div id="gate">
+    <div class="gate-box">
+      <svg class="gate-mark" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="27" stroke="#c9a860" stroke-width="1"/>
+        <path d="M28 14V42M18 22H38" stroke="#c9a860" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <div class="eyebrow">Private Page</div>
+      <h1>Cole's Mission Update</h1>
+      <p class="gate-sub">This page is just for family and friends walking with Cole. Enter the password to continue.</p>
+      <form id="gate-form">
+        <input id="gate-input" type="password" placeholder="Password" autocomplete="off" />
+        <button class="gate-btn" type="submit">Enter</button>
+        <div class="gate-error" id="gate-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="site">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="/">Cole <span>Jaeger</span></a>
+        <button class="nav-toggle" id="navToggle">Menu</button>
+        <nav class="main-nav" id="mainNav">
+          <a href="/">Home</a>
+          <a href="/#newsletters">Newsletters</a>
+          <a href="/#travels">Mission Trips</a>
+          <a href="/#books">Books</a>
+          <a class="support-inline" href="https://www.spo.org/support-cole-jaeger" target="_blank" rel="noopener">Support Cole ↗</a>
+        </nav>
+        <a class="support-link" href="https://www.spo.org/support-cole-jaeger" target="_blank" rel="noopener">Support Cole ↗</a>
+      </div>
+    </header>
+
+    <main>
+      <div class="detail" id="detail-root">
+        <p class="detail-state">Loading…</p>
+      </div>
+    </main>
+
+    <footer>
+      <span class="tagline">That Others May Live</span>
+      Cole Jaeger &middot; Missionary, Saint Paul's Outreach &middot; University of Kansas
+    </footer>
+  </div>
+
+<script>
+  const SITE_PASSWORD = "GoJayhawks26!";
+  const GATE_SESSION_KEY = "guestUnlocked";
+  const gate = document.getElementById('gate');
+  const site = document.getElementById('site');
+  const gateForm = document.getElementById('gate-form');
+  const gateInput = document.getElementById('gate-input');
+  const gateError = document.getElementById('gate-error');
+
+  function unlockSite(){
+    gate.style.display = 'none';
+    site.classList.add('unlocked');
+  }
+
+  if(sessionStorage.getItem(GATE_SESSION_KEY) === '1'){
+    unlockSite();
+  }
+
+  gateForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(gateInput.value === SITE_PASSWORD){
+      sessionStorage.setItem(GATE_SESSION_KEY, '1');
+      unlockSite();
+    } else {
+      gateError.textContent = "That password isn't right — try again.";
+      gateInput.value = '';
+      gateInput.focus();
+    }
+  });
+
+  document.getElementById('navToggle').addEventListener('click', function(){
+    document.getElementById('mainNav').classList.toggle('open');
+  });
+
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  const TYPE_META = {
+    books:       { label: 'Book',         backHref: '/#books',       backLabel: 'Books' },
+    travels:     { label: 'Mission Trip', backHref: '/#travels',     backLabel: 'Mission Trips' },
+    newsletters: { label: 'Newsletter',   backHref: '/#newsletters', backLabel: 'Newsletters' },
+  };
+
+  function metaLine(type, item){
+    if(type === 'books') return item.author ? 'by ' + item.author : '';
+    if(type === 'travels') return item.date || '';
+    if(type === 'newsletters') return item.month || '';
+    return '';
+  }
+
+  function renderItem(type, item){
+    const meta = TYPE_META[type];
+    document.title = item.title + ' — Cole Jaeger';
+    const root = document.getElementById('detail-root');
+    const line = metaLine(type, item);
+    root.innerHTML =
+      '<a class="detail-back" href="' + meta.backHref + '">← Back to ' + meta.backLabel + '</a>' +
+      (item.image_url ? '<img class="detail-image" src="' + esc(item.image_url) + '" alt="" />' : '') +
+      '<div class="eyebrow">' + meta.label + '</div>' +
+      '<h1 class="detail-title">' + esc(item.title) + '</h1>' +
+      (line ? '<div class="detail-meta">' + esc(line) + '</div>' : '') +
+      '<div class="detail-content">' + esc(item.content || item.summary || '') + '</div>' +
+      (type === 'newsletters' && item.link
+        ? '<a class="detail-external" href="' + esc(item.link) + '" target="_blank" rel="noopener">View full newsletter ↗</a>'
+        : '');
+  }
+
+  function renderState(message, backHref, backLabel){
+    document.getElementById('detail-root').innerHTML =
+      (backHref ? '<a class="detail-back" href="' + backHref + '">← Back to ' + esc(backLabel) + '</a>' : '') +
+      '<p class="detail-state">' + esc(message) + '</p>';
+  }
+
+  const parts = location.pathname.split('/').filter(Boolean);
+  const type = parts[0];
+  const id = parts[1];
+  const meta = TYPE_META[type];
+
+  if(!meta || !id){
+    renderState("We couldn't find that page.", '/', 'Home');
+  } else {
+    fetch('/api/item?type=' + encodeURIComponent(type) + '&id=' + encodeURIComponent(id), { cache: 'no-store' })
+      .then(function(res){ return res.json().then(function(data){ return { status: res.status, data: data }; }); })
+      .then(function(r){
+        if(r.status === 404){
+          renderState("This entry couldn't be found — it may have been removed.", meta.backHref, meta.backLabel);
+          return;
+        }
+        if(r.status !== 200 || !r.data || !r.data.item){
+          throw new Error('bad response');
+        }
+        renderItem(type, r.data.item);
+      })
+      .catch(function(){
+        renderState("Something went wrong loading this page. Please refresh.", meta.backHref, meta.backLabel);
+      });
+  }
+</script>
+
+</body>
+</html>

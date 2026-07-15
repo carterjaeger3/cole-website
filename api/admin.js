@@ -1,29 +1,41 @@
 import { COLLECTIONS, getCollection, addItem, updateItem, deleteItem } from '../lib/store.js';
 import { readBody } from '../lib/http.js';
+import { fetchBookCover } from '../lib/bookCover.js';
 
 // The private prayer-intention inbox. Admin can read (list) and delete these,
 // but never add/edit them — they're created only via the public /api/submit.
 const ADMIN_READABLE = [...COLLECTIONS, 'submissions'];
 
-// Insert new items at the front for everything except books, which read as a
-// running reading list (oldest first). Ordering itself is handled by the
-// store layer (created_at ascending/descending); this just documents intent.
 function cleanItem(collection, item) {
   const s = (v) => (v == null ? '' : String(v).trim());
   switch (collection) {
     case 'prayers':
       return { text: s(item.text), date: s(item.date) };
     case 'books':
-      return { title: s(item.title), author: s(item.author), note: s(item.note) };
+      return { title: s(item.title), author: s(item.author), summary: s(item.summary), content: s(item.content), image_url: s(item.image_url) };
     case 'verses':
       return { text: s(item.text), ref: s(item.ref) };
     case 'newsletters':
-      return { month: s(item.month), title: s(item.title), summary: s(item.summary), link: s(item.link) };
+      return { month: s(item.month), title: s(item.title), summary: s(item.summary), content: s(item.content), link: s(item.link), image_url: s(item.image_url) };
     case 'travels':
-      return { date: s(item.date), title: s(item.title), desc: s(item.desc) };
+      return { date: s(item.date), title: s(item.title), summary: s(item.summary), content: s(item.content), image_url: s(item.image_url) };
     default:
       return {};
   }
+}
+
+// If a book is being saved without an image, try to find a real cover
+// automatically. Mutates `cleaned.image_url` in place when one is found.
+// Returns true only if a lookup was attempted and came up empty, so the
+// admin UI can show a "please upload one" note.
+async function tryAutoCover(collection, cleaned) {
+  if (collection !== 'books' || cleaned.image_url) return false;
+  const cover = await fetchBookCover(cleaned.title, cleaned.author);
+  if (cover) {
+    cleaned.image_url = cover;
+    return false;
+  }
+  return true;
 }
 
 export default async function handler(req, res) {
@@ -87,14 +99,20 @@ export default async function handler(req, res) {
   }
 
   try {
+    let coverAutoFetchFailed = false;
+
     if (action === 'add') {
-      await addItem(collection, cleanItem(collection, item || {}));
+      const cleaned = cleanItem(collection, item || {});
+      coverAutoFetchFailed = await tryAutoCover(collection, cleaned);
+      await addItem(collection, cleaned);
     } else if (action === 'update') {
       if (!id) {
         res.status(400).json({ error: 'Missing id.' });
         return;
       }
-      const updated = await updateItem(collection, id, cleanItem(collection, item || {}));
+      const cleaned = cleanItem(collection, item || {});
+      coverAutoFetchFailed = await tryAutoCover(collection, cleaned);
+      const updated = await updateItem(collection, id, cleaned);
       if (!updated) {
         res.status(404).json({ error: 'Item not found.' });
         return;
@@ -111,7 +129,7 @@ export default async function handler(req, res) {
     }
 
     const items = await getCollection(collection);
-    res.status(200).json({ ok: true, collection, items });
+    res.status(200).json({ ok: true, collection, items, coverAutoFetchFailed });
   } catch (err) {
     console.error('admin error:', err);
     if (/not configured/i.test(err.message || '')) {

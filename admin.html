@@ -78,6 +78,12 @@
   form.editor .form-actions{display:flex; gap:10px; align-items:center; margin-top:6px;}
   form.editor .editing-note{font-size:0.8rem; color:var(--gold); display:none;}
   form.editor.is-editing .editing-note{display:inline;}
+  form.editor .field .current-image{
+    display:none; max-width:120px; max-height:160px; border-radius:6px;
+    border:1px solid var(--line); margin-bottom:8px; object-fit:cover;
+  }
+  form.editor .field .current-image.show{display:block;}
+  form.editor .field-hint{font-size:0.78rem; color:var(--mist-dim); margin-top:6px;}
 
   .list{display:flex; flex-direction:column; gap:12px;}
   .row{background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:8px; padding:16px 18px;
@@ -90,6 +96,8 @@
   .badge{display:inline-block; background:rgba(201,168,96,0.15); color:var(--gold); font-size:0.68rem;
     text-transform:uppercase; letter-spacing:0.1em; padding:2px 8px; border-radius:20px; margin-left:8px;}
   .empty{color:var(--mist-dim); font-size:0.88rem; font-style:italic;}
+  .row-thumb{width:48px; height:48px; object-fit:cover; border-radius:6px; flex-shrink:0; border:1px solid var(--line);}
+  .no-cover-note{color:#e2a0a0;}
 
   #toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
     background:var(--navy-card); border:1px solid var(--line); border-left:3px solid var(--green);
@@ -178,12 +186,22 @@
           <input name="title" placeholder="Finishing the Year Strong" required />
         </div>
         <div class="field">
-          <label>Summary</label>
+          <label>Short summary (shown on the Newsletters list)</label>
           <textarea name="summary" placeholder="A short description of this update." required></textarea>
         </div>
         <div class="field">
-          <label>Link (optional — a URL to the full newsletter or PDF)</label>
+          <label>Full write-up (shown on this update's own page — optional, falls back to the summary if left blank)</label>
+          <textarea name="content" placeholder="Write the full newsletter text here."></textarea>
+        </div>
+        <div class="field">
+          <label>External link (optional — a URL to a full PDF or external copy)</label>
           <input name="link" placeholder="https://…" />
+        </div>
+        <div class="field">
+          <label>Header image (optional)</label>
+          <img class="current-image" alt="Current header image" />
+          <input type="file" name="imageFile" accept="image/*" />
+          <input type="hidden" name="image_url" />
         </div>
         <div class="form-actions">
           <button class="btn" type="submit" data-add-label="Add newsletter" data-edit-label="Save changes">Add newsletter</button>
@@ -209,8 +227,18 @@
           <input name="title" placeholder="SPO National Training — Mendota Heights, MN" required />
         </div>
         <div class="field">
-          <label>Description</label>
-          <textarea name="desc" placeholder="A sentence or two on what happened and what God did there." required></textarea>
+          <label>Short summary (shown on the Mission Trips list)</label>
+          <textarea name="summary" placeholder="A sentence or two on what happened and what God did there." required></textarea>
+        </div>
+        <div class="field">
+          <label>Full write-up (shown on this trip's own page — optional, falls back to the summary if left blank)</label>
+          <textarea name="content" placeholder="Write as much as you'd like about this trip."></textarea>
+        </div>
+        <div class="field">
+          <label>Photo (optional)</label>
+          <img class="current-image" alt="Current photo" />
+          <input type="file" name="imageFile" accept="image/*" />
+          <input type="hidden" name="image_url" />
         </div>
         <div class="form-actions">
           <button class="btn" type="submit" data-add-label="Add trip" data-edit-label="Save changes">Add trip</button>
@@ -259,8 +287,18 @@
           <input name="author" placeholder="St. Francis de Sales" required />
         </div>
         <div class="field">
-          <label>Thoughts</label>
-          <textarea name="note" placeholder="A sentence or two on why this book mattered." required></textarea>
+          <label>Short summary (shown on the book list)</label>
+          <textarea name="summary" placeholder="A sentence or two on why this book mattered." required></textarea>
+        </div>
+        <div class="field">
+          <label>Full write-up (shown on the book's own page — optional, falls back to the summary if left blank)</label>
+          <textarea name="content" placeholder="Write as much as you'd like about this book."></textarea>
+        </div>
+        <div class="field">
+          <label>Cover image (optional — leave blank and the site will try to find the real cover automatically)</label>
+          <img class="current-image" alt="Current cover" />
+          <input type="file" name="imageFile" accept="image/*" />
+          <input type="hidden" name="image_url" />
         </div>
         <div class="form-actions">
           <button class="btn" type="submit" data-add-label="Add book" data-edit-label="Save changes">Add book</button>
@@ -371,7 +409,7 @@
     travels: (item) => ({
       meta: esc(item.date),
       title: esc(item.title),
-      detail: esc(item.desc),
+      detail: esc(item.summary),
     }),
     prayers: (item) => ({
       meta: esc(item.date),
@@ -381,9 +419,11 @@
     books: (item) => ({
       meta: esc(item.author),
       title: esc(item.title),
-      detail: esc(item.note),
+      detail: esc(item.summary) + (!item.image_url ? '  ·  <span class="no-cover-note">No cover found — please upload one</span>' : ''),
     }),
   };
+
+  const IMAGE_COLLECTIONS = ['books', 'travels', 'newsletters'];
 
   const state = {}; // collection -> items
 
@@ -402,8 +442,11 @@
       // The inbox is read-only — no Edit button, just Delete.
       const editButton = collection === 'submissions' ? '' :
         '<button class="btn btn-ghost btn-small" data-edit="' + collection + '" data-id="' + esc(item.id) + '">Edit</button>';
+      const thumb = (IMAGE_COLLECTIONS.includes(collection) && item.image_url)
+        ? '<img class="row-thumb" src="' + esc(item.image_url) + '" alt="" />' : '';
       return (
         '<div class="row">' +
+          thumb +
           '<div class="row-body">' +
             (metaText ? '<div class="row-meta">' + metaText + '</div>' : '') +
             '<div class="row-title">' + r.title + badge + '</div>' +
@@ -440,25 +483,49 @@
     const collection = form.dataset.collection;
     const submitBtn = form.querySelector('button[type="submit"]');
 
+    const preview = form.querySelector('.current-image');
+
     function resetForm(){
       form.reset();
       form.querySelector('[name="id"]').value = '';
       form.classList.remove('is-editing');
       submitBtn.textContent = submitBtn.dataset.addLabel;
+      if (preview){ preview.classList.remove('show'); preview.removeAttribute('src'); }
     }
 
     form.querySelector('.cancel-edit').addEventListener('click', resetForm);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fd = new FormData(form);
-      const id = fd.get('id');
-      const item = {};
-      for (const [key, val] of fd.entries()){
-        if (key !== 'id') item[key] = val;
-      }
+      const id = form.querySelector('[name="id"]').value;
+      const fileInput = form.querySelector('input[type="file"]');
+      const imageUrlField = form.querySelector('[name="image_url"]');
       submitBtn.disabled = true;
       try {
+        const file = fileInput && fileInput.files && fileInput.files[0];
+        if (file) {
+          if (file.size > 4 * 1024 * 1024) {
+            throw new Error('That image is too large — please use a file under 4MB.');
+          }
+          const dataBase64 = await fileToBase64(file);
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+            body: JSON.stringify({ dataBase64, contentType: file.type }),
+          });
+          const uploadData = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(uploadData.error || 'Image upload failed.');
+          if (imageUrlField) imageUrlField.value = uploadData.url;
+        }
+
+        // Captured after any upload above, so it reflects the current image_url.
+        const fd = new FormData(form);
+        const item = {};
+        for (const [key, val] of fd.entries()){
+          if (key === 'id' || key === 'imageFile') continue;
+          item[key] = val;
+        }
+
         const payload = id
           ? { action: 'update', collection, id, item }
           : { action: 'add', collection, item };
@@ -466,7 +533,11 @@
         state[collection] = data.items;
         renderList(collection);
         resetForm();
-        toast(id ? 'Saved.' : 'Added.');
+        if (collection === 'books' && data.coverAutoFetchFailed) {
+          toast((id ? 'Saved' : 'Added') + ' — no cover found automatically. Please upload one.', true);
+        } else {
+          toast(id ? 'Saved.' : 'Added.');
+        }
       } catch (err) {
         toast(err.message, true);
       } finally {
@@ -474,6 +545,15 @@
       }
     });
   });
+
+  function fileToBase64(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(',')[1]);
+      reader.onerror = () => reject(new Error('Could not read the selected file.'));
+      reader.readAsDataURL(file);
+    });
+  }
 
   // ---- Edit / Delete (event delegation) ----
   panel.addEventListener('click', async (e) => {
@@ -487,7 +567,13 @@
       if (!item) return;
       const form = document.querySelector('form.editor[data-collection="' + collection + '"]');
       for (const el of form.elements){
+        if (el.type === 'file') continue;
         if (el.name && el.name !== 'id' && item[el.name] !== undefined) el.value = item[el.name];
+      }
+      const preview = form.querySelector('.current-image');
+      if (preview){
+        if (item.image_url){ preview.src = item.image_url; preview.classList.add('show'); }
+        else { preview.classList.remove('show'); preview.removeAttribute('src'); }
       }
       form.querySelector('[name="id"]').value = id;
       form.classList.add('is-editing');

@@ -269,7 +269,11 @@
     border:1px solid var(--line);
     border-radius:8px;
     padding:24px;
+    transition: border-color 0.15s ease;
   }
+  .card:hover{border-color:var(--gold);}
+  .card-click{display:block; text-decoration:none; color:inherit; cursor:pointer;}
+  .card-image{width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:14px; display:block;}
   .card h3{font-size:1.05rem; margin-bottom:8px; font-weight:600;}
   .card .meta{color:var(--gold); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:10px;}
   .card p{color:var(--mist); font-size:0.9rem;}
@@ -301,10 +305,15 @@
   .timeline-item{
     display:grid; grid-template-columns:140px 1fr;
     gap:24px; padding:26px 0; border-bottom:1px solid var(--line);
+    text-decoration:none; color:inherit; cursor:pointer;
+    transition: background 0.15s ease;
   }
+  .timeline-item:hover{background: rgba(255,255,255,0.03);}
+  .timeline-item:hover h3{color:var(--gold);}
   .timeline-item .t-date{color:var(--gold); font-size:0.85rem; padding-top:2px;}
   .timeline-item h3{font-size:1.1rem; margin-bottom:8px;}
   .timeline-item p{color:var(--mist); font-size:0.92rem;}
+  .travel-thumb{width:100%; max-width:360px; height:180px; object-fit:cover; border-radius:6px; margin-bottom:12px; display:block;}
 
   .prayer-item{
     padding:20px 0; border-bottom:1px solid var(--line);
@@ -363,11 +372,16 @@
   .book-item{
     display:grid; grid-template-columns:64px 1fr;
     gap:20px; padding:22px 0; border-bottom:1px solid var(--line);
+    text-decoration:none; color:inherit; cursor:pointer;
+    transition: background 0.15s ease;
   }
+  .book-item:hover{background: rgba(255,255,255,0.03);}
+  .book-item:hover h3{color:var(--gold);}
   .book-cover{
     width:64px; height:88px; border-radius:3px;
     background: linear-gradient(160deg, var(--navy-mid), var(--navy-card));
     border:1px solid var(--line);
+    object-fit:cover;
   }
   .book-item h3{font-size:1.02rem;}
   .book-item .b-author{color:var(--mist-dim); font-size:0.8rem; margin-bottom:8px;}
@@ -570,17 +584,27 @@
 
 <script>
   const SITE_PASSWORD = "GoJayhawks26!";
+  const GATE_SESSION_KEY = "guestUnlocked";
   const gate = document.getElementById('gate');
   const site = document.getElementById('site');
   const gateForm = document.getElementById('gate-form');
   const gateInput = document.getElementById('gate-input');
   const gateError = document.getElementById('gate-error');
 
+  function unlockSite(){
+    gate.style.display = 'none';
+    site.classList.add('unlocked');
+  }
+
+  if(sessionStorage.getItem(GATE_SESSION_KEY) === '1'){
+    unlockSite();
+  }
+
   gateForm.addEventListener('submit', function(e){
     e.preventDefault();
     if(gateInput.value === SITE_PASSWORD){
-      gate.style.display = 'none';
-      site.classList.add('unlocked');
+      sessionStorage.setItem(GATE_SESSION_KEY, '1');
+      unlockSite();
     } else {
       gateError.textContent = "That password isn't right — try again.";
       gateInput.value = '';
@@ -610,6 +634,15 @@
     document.getElementById('mainNav').classList.toggle('open');
   });
 
+  // Deep-link support so "back to Newsletters/Mission Trips" links from a
+  // detail page (e.g. /#newsletters) land on the right tab.
+  if(location.hash){
+    const target = location.hash.slice(1);
+    if(document.getElementById(target)){
+      showView(target);
+    }
+  }
+
   // ---- Dynamic content loaded from the shared store via /api/content ----
   function esc(s){
     return String(s == null ? '' : s)
@@ -632,11 +665,14 @@
     const el = document.getElementById('book-list');
     if(!items.length){ el.innerHTML = '<p class="loading">No books listed yet.</p>'; return; }
     el.innerHTML = items.map(b =>
-      '<div class="book-item"><div class="book-cover"></div><div>' +
-        '<h3>' + esc(b.title) + '</h3>' +
-        '<div class="b-author">' + esc(b.author) + '</div>' +
-        '<p>' + esc(b.note) + '</p>' +
-      '</div></div>'
+      '<a class="book-item" href="/books/' + encodeURIComponent(b.id) + '">' +
+        (b.image_url ? '<img class="book-cover" src="' + esc(b.image_url) + '" alt="" />' : '<div class="book-cover"></div>') +
+        '<div>' +
+          '<h3>' + esc(b.title) + '</h3>' +
+          '<div class="b-author">' + esc(b.author) + '</div>' +
+          '<p>' + esc(b.summary) + '</p>' +
+        '</div>' +
+      '</a>'
     ).join('');
   }
 
@@ -657,10 +693,14 @@
     const el = document.getElementById('travel-list');
     if(!items.length){ el.innerHTML = '<p class="loading">No trips listed yet.</p>'; return; }
     el.innerHTML = items.map(t =>
-      '<div class="timeline-item"><div class="t-date">' + esc(t.date) + '</div><div>' +
-        '<h3>' + esc(t.title) + '</h3>' +
-        '<p>' + esc(t.desc) + '</p>' +
-      '</div></div>'
+      '<a class="timeline-item" href="/travels/' + encodeURIComponent(t.id) + '">' +
+        '<div class="t-date">' + esc(t.date) + '</div>' +
+        '<div>' +
+          (t.image_url ? '<img class="travel-thumb" src="' + esc(t.image_url) + '" alt="" />' : '') +
+          '<h3>' + esc(t.title) + '</h3>' +
+          '<p>' + esc(t.summary) + '</p>' +
+        '</div>' +
+      '</a>'
     ).join('');
   }
 
@@ -668,10 +708,14 @@
     const el = document.getElementById('newsletter-grid');
     if(!items.length){ el.innerHTML = '<p class="loading">No newsletters posted yet.</p>'; return; }
     el.innerHTML = items.map(n =>
-      '<div class="card"><div class="meta">' + esc(n.month) + '</div>' +
-        '<h3>' + esc(n.title) + '</h3>' +
-        '<p>' + esc(n.summary) + '</p>' +
-        (n.link ? '<a class="card-link" href="' + esc(n.link) + '" target="_blank" rel="noopener">Read update →</a>' : '') +
+      '<div class="card">' +
+        '<a class="card-click" href="/newsletters/' + encodeURIComponent(n.id) + '">' +
+          (n.image_url ? '<img class="card-image" src="' + esc(n.image_url) + '" alt="" />' : '') +
+          '<div class="meta">' + esc(n.month) + '</div>' +
+          '<h3>' + esc(n.title) + '</h3>' +
+          '<p>' + esc(n.summary) + '</p>' +
+        '</a>' +
+        (n.link ? '<a class="card-link" href="' + esc(n.link) + '" target="_blank" rel="noopener">External copy ↗</a>' : '') +
       '</div>'
     ).join('');
   }
