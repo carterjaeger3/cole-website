@@ -212,10 +212,12 @@
     border:1px solid var(--line);
     background: linear-gradient(160deg, var(--navy-mid), var(--navy-card));
     display:flex; align-items:center; justify-content:center;
-    text-align:center;
-    color:var(--mist-dim);
-    font-size:0.85rem;
-    padding:24px;
+  }
+  .portrait-frame img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
   }
 
   .cta-row{display:flex; gap:14px; margin-top:8px; flex-wrap:wrap;}
@@ -420,7 +422,7 @@
               </g>
             </svg>
             <div class="portrait-frame">
-              Swap this for Cole's missionary photo<br><br>(recommended: portrait orientation, 4:5)
+              <img src="Cole Portriat Picture.png" alt="Cole Jaeger, missionary with Saint Paul's Outreach at the University of Kansas" />
             </div>
           </div>
         </div>
