@@ -187,6 +187,33 @@
       <div class="list" data-list="newsletters"></div>
     </section>
 
+    <!-- MISSION TRIPS -->
+    <section class="block">
+      <h2>Mission Trips, Retreats &amp; Travel</h2>
+      <p class="block-sub">Where the mission has taken Cole. Newest appears first.</p>
+      <form class="editor" data-collection="travels">
+        <input type="hidden" name="id" />
+        <div class="field">
+          <label>Date label</label>
+          <input name="date" placeholder="Jul 2026" required />
+        </div>
+        <div class="field">
+          <label>Title / location</label>
+          <input name="title" placeholder="SPO National Training — Mendota Heights, MN" required />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea name="desc" placeholder="A sentence or two on what happened and what God did there." required></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn" type="submit" data-add-label="Add trip" data-edit-label="Save changes">Add trip</button>
+          <button class="btn btn-ghost btn-small cancel-edit" type="button">Cancel</button>
+          <span class="editing-note">Editing existing item…</span>
+        </div>
+      </form>
+      <div class="list" data-list="travels"></div>
+    </section>
+
     <!-- PRAYER REQUESTS -->
     <section class="block">
       <h2>Prayer Requests</h2>
@@ -323,6 +350,11 @@
       title: esc(item.title),
       detail: esc(item.summary) + (item.link ? '  ·  ' + esc(item.link) : ''),
     }),
+    travels: (item) => ({
+      meta: esc(item.date),
+      title: esc(item.title),
+      detail: esc(item.desc),
+    }),
     prayers: (item) => ({
       meta: esc(item.date),
       title: esc(item.text),
@@ -367,7 +399,7 @@
   async function loadAll(){
     const res = await fetch('/api/content', { cache: 'no-store' });
     const data = await res.json();
-    for (const c of ['verses','newsletters','prayers','books']){
+    for (const c of ['verses','newsletters','travels','prayers','books']){
       state[c] = data[c] || [];
       renderList(c);
     }

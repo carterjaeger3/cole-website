@@ -34,6 +34,8 @@ function cleanItem(collection, item) {
       return { text: s(item.text), ref: s(item.ref) };
     case 'newsletters':
       return { month: s(item.month), title: s(item.title), summary: s(item.summary), link: s(item.link) };
+    case 'travels':
+      return { date: s(item.date), title: s(item.title), desc: s(item.desc) };
     default:
       return {};
   }

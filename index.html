@@ -462,28 +462,8 @@
           <h2>Mission Trips, Retreats & Travel</h2>
           <p>Where the mission has taken Cole this year — and what God did there.</p>
         </div>
-        <div class="timeline">
-          <div class="timeline-item">
-            <div class="t-date">Jul 2026</div>
-            <div>
-              <h3>SPO National Training — Mendota Heights, MN</h3>
-              <p>A week of formation with missionaries from every SPO chapter before the new school year begins.</p>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="t-date">Mar 2026</div>
-            <div>
-              <h3>KU Spring Retreat — Rock Springs, KS</h3>
-              <p>Led small groups and gave a talk on identity in Christ for 60 students over the weekend.</p>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="t-date">Jan 2026</div>
-            <div>
-              <h3>SEEK Conference — St. Louis, MO</h3>
-              <p>Brought a group of KU students to SEEK for a week of talks, Adoration, and confession lines that didn't quit.</p>
-            </div>
-          </div>
+        <div class="timeline" id="travel-list">
+          <p class="loading">Loading…</p>
         </div>
       </section>
 
@@ -611,6 +591,17 @@
     ).join('');
   }
 
+  function renderTravels(items){
+    const el = document.getElementById('travel-list');
+    if(!items.length){ el.innerHTML = '<p class="loading">No trips listed yet.</p>'; return; }
+    el.innerHTML = items.map(t =>
+      '<div class="timeline-item"><div class="t-date">' + esc(t.date) + '</div><div>' +
+        '<h3>' + esc(t.title) + '</h3>' +
+        '<p>' + esc(t.desc) + '</p>' +
+      '</div></div>'
+    ).join('');
+  }
+
   function renderNewsletters(items){
     const el = document.getElementById('newsletter-grid');
     if(!items.length){ el.innerHTML = '<p class="loading">No newsletters posted yet.</p>'; return; }
@@ -624,7 +615,7 @@
   }
 
   function showLoadError(){
-    ['prayer-list','book-list','newsletter-grid','verse-current'].forEach(function(id){
+    ['prayer-list','book-list','newsletter-grid','verse-current','travel-list'].forEach(function(id){
       const el = document.getElementById(id);
       if(el) el.innerHTML = '<p class="load-error">Couldn’t load this content. Please refresh.</p>';
     });
@@ -637,6 +628,7 @@
       renderBooks(data.books || []);
       renderVerses(data.verses || []);
       renderNewsletters(data.newsletters || []);
+      renderTravels(data.travels || []);
     })
     .catch(function(){ showLoadError(); });
 </script>
