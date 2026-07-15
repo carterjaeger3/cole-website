@@ -336,6 +336,20 @@
   .submit-msg.ok{color:#9fd6b6;}
   .submit-msg.err{color:#e2a0a0;}
 
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(5,12,24,0.72); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:150; padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-overlay .modal-box{
+    margin:0; max-width:480px; width:100%; max-height:88vh; overflow-y:auto; position:relative;
+  }
+  .modal-close{
+    position:absolute; top:12px; right:12px; background:none; border:none; color:var(--mist);
+    font-size:1.6rem; line-height:1; cursor:pointer; padding:4px 10px; border-radius:4px;
+  }
+  .modal-close:hover{color:var(--white);}
+
   .book-item{
     display:grid; grid-template-columns:64px 1fr;
     gap:20px; padding:22px 0; border-bottom:1px solid var(--line);
@@ -465,14 +479,27 @@
 
         <div class="section-head">
           <div class="eyebrow">Ask With Us</div>
-          <h2>Prayer Requests</h2>
+          <h2>How You Can Pray for Me</h2>
           <p>Specific things Cole is asking prayer for right now.</p>
         </div>
         <div id="prayer-list" style="margin-bottom:8px;">
           <p class="loading">Loading…</p>
         </div>
-        <div class="prayer-form-note">
-          <h3>Submit a Prayer Intention</h3>
+
+        <div class="section-head">
+          <div class="eyebrow">In Return</div>
+          <h2>How I Can Pray for You</h2>
+          <p>Is there something you'd like Cole to pray for? Share it privately below — it's never posted on this page.</p>
+        </div>
+        <div style="margin-bottom:64px;">
+          <button type="button" class="btn btn-primary" id="open-prayer-modal">Submit a Prayer Intention</button>
+        </div>
+      </section>
+
+      <div class="modal-overlay" id="prayer-modal-overlay">
+        <div class="prayer-form-note modal-box" role="dialog" aria-modal="true" aria-labelledby="prayer-modal-title">
+          <button type="button" class="modal-close" id="close-prayer-modal" aria-label="Close">&times;</button>
+          <h3 id="prayer-modal-title">Submit a Prayer Intention</h3>
           <p>Is there something you'd like Cole to pray for? Share it below.</p>
           <p class="privacy-note">🔒 No one but Cole will ever see this. Your intention is private and is never posted on the site.</p>
           <form id="prayer-submit-form" autocomplete="off">
@@ -488,7 +515,7 @@
             <div class="submit-msg" id="prayer-submit-msg" role="status" aria-live="polite"></div>
           </form>
         </div>
-      </section>
+      </div>
 
       <section class="view" id="newsletters">
         <div class="section-head">
@@ -652,6 +679,36 @@
     });
   }
 
+  // ---- Prayer intention modal ----
+  const prayerModal = document.getElementById('prayer-modal-overlay');
+  const openPrayerModalBtn = document.getElementById('open-prayer-modal');
+  const closePrayerModalBtn = document.getElementById('close-prayer-modal');
+
+  function openPrayerModal(){
+    if(!prayerModal) return;
+    prayerModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    const msg = document.getElementById('prayer-submit-msg');
+    if(msg){ msg.textContent = ''; msg.className = 'submit-msg'; }
+    const firstField = prayerModal.querySelector('textarea[name="intention"]');
+    if(firstField) firstField.focus();
+  }
+  function closePrayerModal(){
+    if(!prayerModal) return;
+    prayerModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  if(openPrayerModalBtn) openPrayerModalBtn.addEventListener('click', openPrayerModal);
+  if(closePrayerModalBtn) closePrayerModalBtn.addEventListener('click', closePrayerModal);
+  if(prayerModal){
+    prayerModal.addEventListener('click', function(e){
+      if(e.target === prayerModal) closePrayerModal();
+    });
+  }
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && prayerModal && prayerModal.classList.contains('open')) closePrayerModal();
+  });
+
   // ---- Prayer intention submission form ----
   const psForm = document.getElementById('prayer-submit-form');
   if(psForm){
@@ -681,6 +738,7 @@
           psForm.reset();
           msg.className = 'submit-msg ok';
           msg.textContent = 'Thank you — your intention has been received. Cole will be praying.';
+          setTimeout(closePrayerModal, 2200);
         })
         .catch(function(err){
           msg.className = 'submit-msg err';
