@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Cole Jaeger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0a1b33;
+    --navy-mid:#122a4d;
+    --navy-card:#0f2340;
+    --line: rgba(255,255,255,0.12);
+    --white:#ffffff;
+    --mist:#a9c0e0;
+    --mist-dim:#7d93b8;
+    --gold:#c9a860;
+    --crimson:#8b2332;
+    --green:#3f9b6d;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, var(--navy-mid), var(--navy-deep) 55%);
+    color: var(--white);
+    font-family:'Inter', sans-serif;
+    font-weight:300;
+    min-height:100vh;
+    line-height:1.6;
+  }
+  h1,h2,h3{font-family:'Playfair Display', serif; font-weight:600; letter-spacing:0.01em;}
+  .eyebrow{text-transform:uppercase; letter-spacing:0.22em; font-size:0.72rem; color:var(--gold); font-weight:500;}
+
+  /* Login gate */
+  #gate{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:24px;
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, var(--navy-mid), var(--navy-deep) 55%); z-index:100;}
+  .gate-box{max-width:380px; width:100%; text-align:center;}
+  .gate-mark{width:56px; height:56px; margin:0 auto 24px; opacity:0.9;}
+  .gate-box h1{font-size:1.5rem; margin:6px 0;}
+  .gate-sub{color:var(--mist); font-size:0.92rem; margin-bottom:32px;}
+  #gate-form{display:flex; flex-direction:column; gap:14px;}
+  input, textarea{
+    background: rgba(255,255,255,0.05); border:1px solid var(--line); color:var(--white);
+    font-family:'Inter', sans-serif; font-size:1rem; padding:12px 14px; border-radius:6px; width:100%;
+  }
+  textarea{resize:vertical; min-height:80px; line-height:1.5;}
+  input:focus, textarea:focus{outline:none; border-color:var(--gold);}
+  input::placeholder, textarea::placeholder{color:var(--mist-dim);}
+  #gate-input{text-align:center;}
+  .btn{
+    background:var(--gold); color:var(--navy-deep); border:none; font-family:'Inter', sans-serif;
+    font-weight:600; font-size:0.95rem; padding:12px 18px; border-radius:6px; cursor:pointer;
+    transition:opacity 0.15s ease; letter-spacing:0.02em;
+  }
+  .btn:hover{opacity:0.88;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--white);}
+  .btn-danger{background:transparent; border:1px solid rgba(226,160,160,0.5); color:#e2a0a0; padding:6px 12px; font-size:0.8rem; font-weight:500;}
+  .btn-small{padding:6px 12px; font-size:0.8rem; font-weight:500;}
+  .gate-error{color:#e2a0a0; font-size:0.85rem; min-height:1.2em;}
+
+  /* Admin panel */
+  #panel{display:none; max-width:820px; margin:0 auto; padding:40px 24px 80px;}
+  #panel.visible{display:block;}
+  .panel-head{display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+    padding-bottom:24px; border-bottom:1px solid var(--line); margin-bottom:8px;}
+  .panel-head h1{font-size:1.7rem;}
+  .panel-head p{color:var(--mist); font-size:0.9rem; margin-top:4px;}
+
+  .block{padding:36px 0; border-bottom:1px solid var(--line);}
+  .block > h2{font-size:1.3rem; margin-bottom:4px;}
+  .block > .block-sub{color:var(--mist); font-size:0.88rem; margin-bottom:22px;}
+
+  form.editor{background:var(--navy-card); border:1px solid var(--line); border-radius:8px; padding:22px; margin-bottom:24px;}
+  form.editor .field{margin-bottom:14px;}
+  form.editor label{display:block; font-size:0.78rem; color:var(--mist); margin-bottom:6px; letter-spacing:0.02em;}
+  form.editor .form-actions{display:flex; gap:10px; align-items:center; margin-top:6px;}
+  form.editor .editing-note{font-size:0.8rem; color:var(--gold); display:none;}
+  form.editor.is-editing .editing-note{display:inline;}
+
+  .list{display:flex; flex-direction:column; gap:12px;}
+  .row{background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:8px; padding:16px 18px;
+    display:flex; justify-content:space-between; gap:16px; align-items:flex-start;}
+  .row .row-body{flex:1; min-width:0;}
+  .row .row-title{font-weight:500; font-size:0.98rem; overflow-wrap:anywhere;}
+  .row .row-meta{color:var(--gold); font-size:0.74rem; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;}
+  .row .row-detail{color:var(--mist); font-size:0.86rem; margin-top:4px; overflow-wrap:anywhere;}
+  .row .row-actions{display:flex; gap:8px; flex-shrink:0;}
+  .badge{display:inline-block; background:rgba(201,168,96,0.15); color:var(--gold); font-size:0.68rem;
+    text-transform:uppercase; letter-spacing:0.1em; padding:2px 8px; border-radius:20px; margin-left:8px;}
+  .empty{color:var(--mist-dim); font-size:0.88rem; font-style:italic;}
+
+  #toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--navy-card); border:1px solid var(--line); border-left:3px solid var(--green);
+    padding:12px 20px; border-radius:6px; font-size:0.9rem; opacity:0; pointer-events:none;
+    transition:opacity 0.2s ease, transform 0.2s ease; z-index:200; max-width:90vw;}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  #toast.error{border-left-color:var(--crimson);}
+
+  @media (max-width:600px){
+    .row{flex-direction:column;}
+    .row .row-actions{flex-direction:row;}
+  }
+</style>
+</head>
+<body>
+
+  <div id="gate">
+    <div class="gate-box">
+      <svg class="gate-mark" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="27" stroke="#c9a860" stroke-width="1"/>
+        <path d="M28 14V42M18 22H38" stroke="#c9a860" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <div class="eyebrow">Admin</div>
+      <h1>Content Editor</h1>
+      <p class="gate-sub">For Cole only. Enter the admin password to manage the site's content.</p>
+      <form id="gate-form">
+        <input id="gate-input" type="password" placeholder="Admin password" autocomplete="off" />
+        <button class="btn" type="submit">Sign in</button>
+        <div class="gate-error" id="gate-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="panel">
+    <div class="panel-head">
+      <div>
+        <div class="eyebrow">Admin</div>
+        <h1>Content Editor</h1>
+        <p>Add, edit, or remove content. Changes save immediately and appear on the public site.</p>
+      </div>
+      <button class="btn btn-ghost btn-small" id="signout">Sign out</button>
+    </div>
+
+    <!-- VERSE OF THE WEEK -->
+    <section class="block">
+      <h2>Verse of the Week</h2>
+      <p class="block-sub">The newest verse becomes the current "Verse of the Week"; the rest move to Past Verses.</p>
+      <form class="editor" data-collection="verses">
+        <input type="hidden" name="id" />
+        <div class="field">
+          <label>Verse text (no quotation marks needed)</label>
+          <textarea name="text" placeholder="I have called you by name, you are mine." required></textarea>
+        </div>
+        <div class="field">
+          <label>Reference</label>
+          <input name="ref" placeholder="Isaiah 43:1" required />
+        </div>
+        <div class="form-actions">
+          <button class="btn" type="submit" data-add-label="Add verse" data-edit-label="Save changes">Add verse</button>
+          <button class="btn btn-ghost btn-small cancel-edit" type="button">Cancel</button>
+          <span class="editing-note">Editing existing item…</span>
+        </div>
+      </form>
+      <div class="list" data-list="verses"></div>
+    </section>
+
+    <!-- NEWSLETTERS -->
+    <section class="block">
+      <h2>Newsletters</h2>
+      <p class="block-sub">Monthly campus-ministry updates. Newest appears first.</p>
+      <form class="editor" data-collection="newsletters">
+        <input type="hidden" name="id" />
+        <div class="field">
+          <label>Month</label>
+          <input name="month" placeholder="July 2026" required />
+        </div>
+        <div class="field">
+          <label>Title</label>
+          <input name="title" placeholder="Finishing the Year Strong" required />
+        </div>
+        <div class="field">
+          <label>Summary</label>
+          <textarea name="summary" placeholder="A short description of this update." required></textarea>
+        </div>
+        <div class="field">
+          <label>Link (optional — a URL to the full newsletter or PDF)</label>
+          <input name="link" placeholder="https://…" />
+        </div>
+        <div class="form-actions">
+          <button class="btn" type="submit" data-add-label="Add newsletter" data-edit-label="Save changes">Add newsletter</button>
+          <button class="btn btn-ghost btn-small cancel-edit" type="button">Cancel</button>
+          <span class="editing-note">Editing existing item…</span>
+        </div>
+      </form>
+      <div class="list" data-list="newsletters"></div>
+    </section>
+
+    <!-- PRAYER REQUESTS -->
+    <section class="block">
+      <h2>Prayer Requests</h2>
+      <p class="block-sub">Specific things to ask prayer for. Newest appears first.</p>
+      <form class="editor" data-collection="prayers">
+        <input type="hidden" name="id" />
+        <div class="field">
+          <label>Request</label>
+          <textarea name="text" placeholder="For three students discerning a call to mission." required></textarea>
+        </div>
+        <div class="field">
+          <label>Date label</label>
+          <input name="date" placeholder="Updated July 2026" required />
+        </div>
+        <div class="form-actions">
+          <button class="btn" type="submit" data-add-label="Add prayer request" data-edit-label="Save changes">Add prayer request</button>
+          <button class="btn btn-ghost btn-small cancel-edit" type="button">Cancel</button>
+          <span class="editing-note">Editing existing item…</span>
+        </div>
+      </form>
+      <div class="list" data-list="prayers"></div>
+    </section>
+
+    <!-- BOOKS -->
+    <section class="block">
+      <h2>Books</h2>
+      <p class="block-sub">Spiritual reading list. Added to the end of the list.</p>
+      <form class="editor" data-collection="books">
+        <input type="hidden" name="id" />
+        <div class="field">
+          <label>Title</label>
+          <input name="title" placeholder="Introduction to the Devout Life" required />
+        </div>
+        <div class="field">
+          <label>Author</label>
+          <input name="author" placeholder="St. Francis de Sales" required />
+        </div>
+        <div class="field">
+          <label>Thoughts</label>
+          <textarea name="note" placeholder="A sentence or two on why this book mattered." required></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn" type="submit" data-add-label="Add book" data-edit-label="Save changes">Add book</button>
+          <button class="btn btn-ghost btn-small cancel-edit" type="button">Cancel</button>
+          <span class="editing-note">Editing existing item…</span>
+        </div>
+      </form>
+      <div class="list" data-list="books"></div>
+    </section>
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+  const gate = document.getElementById('gate');
+  const gateForm = document.getElementById('gate-form');
+  const gateInput = document.getElementById('gate-input');
+  const gateError = document.getElementById('gate-error');
+  const panel = document.getElementById('panel');
+
+  // Password is held in memory for the tab session only. Never stored to disk.
+  let pw = sessionStorage.getItem('coleAdminPw') || '';
+
+  const toastEl = document.getElementById('toast');
+  let toastTimer;
+  function toast(msg, isError){
+    toastEl.textContent = msg;
+    toastEl.classList.toggle('error', !!isError);
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+  }
+
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  async function api(body){
+    const res = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+      body: JSON.stringify(body),
+    });
+    let data = {};
+    try { data = await res.json(); } catch {}
+    if (res.status === 401) { signOut(); throw new Error('Your session ended. Please sign in again.'); }
+    if (!res.ok) throw new Error(data.error || 'Request failed.');
+    return data;
+  }
+
+  function signOut(){
+    pw = '';
+    sessionStorage.removeItem('coleAdminPw');
+    panel.classList.remove('visible');
+    gate.style.display = 'flex';
+    gateInput.value = '';
+  }
+
+  async function signIn(candidate){
+    pw = candidate;
+    await api({ action: 'verify' });   // throws if wrong
+    sessionStorage.setItem('coleAdminPw', pw);
+    gate.style.display = 'none';
+    panel.classList.add('visible');
+    await loadAll();
+  }
+
+  gateForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    gateError.textContent = '';
+    try {
+      await signIn(gateInput.value);
+    } catch (err) {
+      pw = '';
+      gateError.textContent = "That password isn't right — try again.";
+      gateInput.value = '';
+      gateInput.focus();
+    }
+  });
+
+  document.getElementById('signout').addEventListener('click', signOut);
+
+  // ---- Rendering the lists ----
+  const RENDERERS = {
+    verses: (item, i) => ({
+      title: '“' + esc(item.text) + '”',
+      detail: esc(item.ref),
+      current: i === 0,
+    }),
+    newsletters: (item) => ({
+      meta: esc(item.month),
+      title: esc(item.title),
+      detail: esc(item.summary) + (item.link ? '  ·  ' + esc(item.link) : ''),
+    }),
+    prayers: (item) => ({
+      meta: esc(item.date),
+      title: esc(item.text),
+      detail: '',
+    }),
+    books: (item) => ({
+      meta: esc(item.author),
+      title: esc(item.title),
+      detail: esc(item.note),
+    }),
+  };
+
+  const state = {}; // collection -> items
+
+  function renderList(collection){
+    const container = document.querySelector('[data-list="' + collection + '"]');
+    const items = state[collection] || [];
+    if (!items.length){
+      container.innerHTML = '<div class="empty">Nothing here yet.</div>';
+      return;
+    }
+    container.innerHTML = items.map((item, i) => {
+      const r = RENDERERS[collection](item, i);
+      const badge = r.current ? '<span class="badge">Current</span>' : '';
+      const metaText = collection === 'verses' ? (i === 0 ? 'Current verse' : 'Past verse') : r.meta;
+      return (
+        '<div class="row">' +
+          '<div class="row-body">' +
+            '<div class="row-meta">' + esc(metaText) + '</div>' +
+            '<div class="row-title">' + r.title + badge + '</div>' +
+            (r.detail ? '<div class="row-detail">' + r.detail + '</div>' : '') +
+          '</div>' +
+          '<div class="row-actions">' +
+            '<button class="btn btn-ghost btn-small" data-edit="' + collection + '" data-id="' + esc(item.id) + '">Edit</button>' +
+            '<button class="btn-danger" data-delete="' + collection + '" data-id="' + esc(item.id) + '">Delete</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  async function loadAll(){
+    const res = await fetch('/api/content', { cache: 'no-store' });
+    const data = await res.json();
+    for (const c of ['verses','newsletters','prayers','books']){
+      state[c] = data[c] || [];
+      renderList(c);
+    }
+  }
+
+  // ---- Forms: add + edit ----
+  document.querySelectorAll('form.editor').forEach((form) => {
+    const collection = form.dataset.collection;
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    function resetForm(){
+      form.reset();
+      form.querySelector('[name="id"]').value = '';
+      form.classList.remove('is-editing');
+      submitBtn.textContent = submitBtn.dataset.addLabel;
+    }
+
+    form.querySelector('.cancel-edit').addEventListener('click', resetForm);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const id = fd.get('id');
+      const item = {};
+      for (const [key, val] of fd.entries()){
+        if (key !== 'id') item[key] = val;
+      }
+      submitBtn.disabled = true;
+      try {
+        const payload = id
+          ? { action: 'update', collection, id, item }
+          : { action: 'add', collection, item };
+        const data = await api(payload);
+        state[collection] = data.items;
+        renderList(collection);
+        resetForm();
+        toast(id ? 'Saved.' : 'Added.');
+      } catch (err) {
+        toast(err.message, true);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  });
+
+  // ---- Edit / Delete (event delegation) ----
+  panel.addEventListener('click', async (e) => {
+    const editBtn = e.target.closest('[data-edit]');
+    const delBtn = e.target.closest('[data-delete]');
+
+    if (editBtn){
+      const collection = editBtn.dataset.edit;
+      const id = editBtn.dataset.id;
+      const item = (state[collection] || []).find((x) => x.id === id);
+      if (!item) return;
+      const form = document.querySelector('form.editor[data-collection="' + collection + '"]');
+      for (const el of form.elements){
+        if (el.name && el.name !== 'id' && item[el.name] !== undefined) el.value = item[el.name];
+      }
+      form.querySelector('[name="id"]').value = id;
+      form.classList.add('is-editing');
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.textContent = submitBtn.dataset.editLabel;
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (delBtn){
+      const collection = delBtn.dataset.delete;
+      const id = delBtn.dataset.id;
+      if (!confirm('Delete this item? This cannot be undone.')) return;
+      try {
+        const data = await api({ action: 'delete', collection, id });
+        state[collection] = data.items;
+        renderList(collection);
+        toast('Deleted.');
+      } catch (err) {
+        toast(err.message, true);
+      }
+    }
+  });
+
+  // Auto-resume a session if the password is still in sessionStorage.
+  (async () => {
+    if (pw){
+      try { await signIn(pw); } catch { signOut(); }
+    }
+  })();
+</script>
+
+</body>
+</html>

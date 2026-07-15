@@ -326,6 +326,9 @@
   .book-item .b-author{color:var(--mist-dim); font-size:0.8rem; margin-bottom:8px;}
   .book-item p{color:var(--mist); font-size:0.9rem;}
 
+  .loading{color:var(--mist-dim); font-size:0.88rem;}
+  .load-error{color:#e2a0a0; font-size:0.88rem;}
+
   footer{
     border-top:1px solid var(--line);
     padding:44px 24px 60px;
@@ -434,33 +437,9 @@
           <h2>Newsletters</h2>
           <p>A monthly look at what God is doing on campus — new students, retreats, and answered prayers.</p>
         </div>
-        <div class="card-grid">
-          <div class="card">
-            <div class="meta">June 2026</div>
-            <h3>Finishing the Year Strong</h3>
-            <p>End-of-year highlights from campus ministry, a recap of the spring retreat, and summer plans.</p>
-            <a class="card-link" href="#">Read update →</a>
-          </div>
-          <div class="card">
-            <div class="meta">May 2026</div>
-            <h3>Baptisms & Send-Offs</h3>
-            <p>Two students were baptized this month, and the graduating seniors were commissioned for mission.</p>
-            <a class="card-link" href="#">Read update →</a>
-          </div>
-          <div class="card">
-            <div class="meta">April 2026</div>
-            <h3>Holy Week on Campus</h3>
-            <p>How the household lived out Triduum together, plus a few answered prayers from Lent.</p>
-            <a class="card-link" href="#">Read update →</a>
-          </div>
-          <div class="card">
-            <div class="meta">March 2026</div>
-            <h3>Spring Retreat Recap</h3>
-            <p>60 students, one weekend, and a lot of good confessions. Photos and testimonies inside.</p>
-            <a class="card-link" href="#">Read update →</a>
-          </div>
+        <div class="card-grid" id="newsletter-grid">
+          <p class="loading">Loading…</p>
         </div>
-        <p style="color:var(--mist-dim); font-size:0.82rem; margin-top:-40px; margin-bottom:60px;">Placeholder entries — replace with real archive links or PDFs as newsletters go out.</p>
       </section>
 
       <section class="view" id="verses">
@@ -469,27 +448,12 @@
           <h2>Verse of the Week</h2>
           <p>A verse Cole is praying with and sharing with students this week.</p>
         </div>
-        <div class="verse-feature">
-          <span class="eyebrow">Current</span>
-          <blockquote>"I have called you by name, you are mine."</blockquote>
-          Isaiah 43:1
+        <div id="verse-current">
+          <p class="loading">Loading…</p>
         </div>
 
         <h3 style="margin:56px 0 6px; font-size:1.1rem;">Past Verses</h3>
-        <div style="margin-bottom:64px;">
-          <div class="verse-archive-item">
-            <span>"Be still, and know that I am God."</span>
-            <span class="v-ref">Psalm 46:10</span>
-          </div>
-          <div class="verse-archive-item">
-            <span>"For I know the plans I have for you, declares the Lord."</span>
-            <span class="v-ref">Jeremiah 29:11</span>
-          </div>
-          <div class="verse-archive-item">
-            <span>"Go therefore and make disciples of all nations."</span>
-            <span class="v-ref">Matthew 28:19</span>
-          </div>
-        </div>
+        <div id="verse-archive" style="margin-bottom:64px;"></div>
       </section>
 
       <section class="view" id="travels">
@@ -529,28 +493,8 @@
           <h2>Prayer Requests</h2>
           <p>Specific things Cole is asking prayer for right now.</p>
         </div>
-        <div style="margin-bottom:8px;">
-          <div class="prayer-item">
-            <div class="prayer-dot"></div>
-            <div>
-              <p>For three students discerning whether to apply as missionaries next year.</p>
-              <div class="p-date">Updated July 2026</div>
-            </div>
-          </div>
-          <div class="prayer-item">
-            <div class="prayer-dot"></div>
-            <div>
-              <p>For safe travel and good conversations at SPO National Training.</p>
-              <div class="p-date">Updated July 2026</div>
-            </div>
-          </div>
-          <div class="prayer-item">
-            <div class="prayer-dot"></div>
-            <div>
-              <p>For provision — a few monthly supporters recently had to step back.</p>
-              <div class="p-date">Updated June 2026</div>
-            </div>
-          </div>
+        <div id="prayer-list" style="margin-bottom:8px;">
+          <p class="loading">Loading…</p>
         </div>
         <div class="prayer-form-note">
           Have a prayer intention? Email it to <a href="mailto:cole@example.com">cole@example.com</a> and it may be added here. (Swap in Cole's real contact — a real submission form can be added once this moves into Claude Code.)
@@ -563,31 +507,8 @@
           <h2>Spiritual Books I've Read</h2>
           <p>Books that have shaped Cole's faith, with a few thoughts on each.</p>
         </div>
-        <div style="margin-bottom:64px;">
-          <div class="book-item">
-            <div class="book-cover"></div>
-            <div>
-              <h3>Introduction to the Devout Life</h3>
-              <div class="b-author">St. Francis de Sales</div>
-              <p>Practical and gentle — a good companion for anyone trying to grow in holiness in the middle of a busy, ordinary life.</p>
-            </div>
-          </div>
-          <div class="book-item">
-            <div class="book-cover"></div>
-            <div>
-              <h3>He Leadeth Me</h3>
-              <div class="b-author">Fr. Walter Ciszek, S.J.</div>
-              <p>A hard, honest account of finding God's presence in suffering. Reread this before every mission trip.</p>
-            </div>
-          </div>
-          <div class="book-item">
-            <div class="book-cover"></div>
-            <div>
-              <h3>The Screwtape Letters</h3>
-              <div class="b-author">C.S. Lewis</div>
-              <p>Sharp, funny, and uncomfortably accurate about the small ways we talk ourselves out of holiness.</p>
-            </div>
-          </div>
+        <div id="book-list" style="margin-bottom:64px;">
+          <p class="loading">Loading…</p>
         </div>
       </section>
 
@@ -640,6 +561,84 @@
   document.getElementById('navToggle').addEventListener('click', function(){
     document.getElementById('mainNav').classList.toggle('open');
   });
+
+  // ---- Dynamic content loaded from the shared store via /api/content ----
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function renderPrayers(items){
+    const el = document.getElementById('prayer-list');
+    if(!items.length){ el.innerHTML = '<p class="loading">No prayer requests right now.</p>'; return; }
+    el.innerHTML = items.map(p =>
+      '<div class="prayer-item"><div class="prayer-dot"></div><div>' +
+        '<p>' + esc(p.text) + '</p>' +
+        (p.date ? '<div class="p-date">' + esc(p.date) + '</div>' : '') +
+      '</div></div>'
+    ).join('');
+  }
+
+  function renderBooks(items){
+    const el = document.getElementById('book-list');
+    if(!items.length){ el.innerHTML = '<p class="loading">No books listed yet.</p>'; return; }
+    el.innerHTML = items.map(b =>
+      '<div class="book-item"><div class="book-cover"></div><div>' +
+        '<h3>' + esc(b.title) + '</h3>' +
+        '<div class="b-author">' + esc(b.author) + '</div>' +
+        '<p>' + esc(b.note) + '</p>' +
+      '</div></div>'
+    ).join('');
+  }
+
+  function renderVerses(items){
+    const current = document.getElementById('verse-current');
+    const archive = document.getElementById('verse-archive');
+    if(!items.length){
+      current.innerHTML = '<p class="loading">No verse posted yet.</p>';
+      archive.innerHTML = '';
+      return;
+    }
+    const first = items[0];
+    current.innerHTML =
+      '<div class="verse-feature"><span class="eyebrow">Current</span>' +
+      '<blockquote>“' + esc(first.text) + '”</blockquote>' +
+      '<cite>' + esc(first.ref) + '</cite></div>';
+    archive.innerHTML = items.slice(1).map(v =>
+      '<div class="verse-archive-item"><span>“' + esc(v.text) + '”</span>' +
+      '<span class="v-ref">' + esc(v.ref) + '</span></div>'
+    ).join('');
+  }
+
+  function renderNewsletters(items){
+    const el = document.getElementById('newsletter-grid');
+    if(!items.length){ el.innerHTML = '<p class="loading">No newsletters posted yet.</p>'; return; }
+    el.innerHTML = items.map(n =>
+      '<div class="card"><div class="meta">' + esc(n.month) + '</div>' +
+        '<h3>' + esc(n.title) + '</h3>' +
+        '<p>' + esc(n.summary) + '</p>' +
+        (n.link ? '<a class="card-link" href="' + esc(n.link) + '" target="_blank" rel="noopener">Read update →</a>' : '') +
+      '</div>'
+    ).join('');
+  }
+
+  function showLoadError(){
+    ['prayer-list','book-list','newsletter-grid','verse-current'].forEach(function(id){
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = '<p class="load-error">Couldn’t load this content. Please refresh.</p>';
+    });
+  }
+
+  fetch('/api/content', { cache: 'no-store' })
+    .then(function(res){ if(!res.ok) throw new Error('bad status'); return res.json(); })
+    .then(function(data){
+      renderPrayers(data.prayers || []);
+      renderBooks(data.books || []);
+      renderVerses(data.verses || []);
+      renderNewsletters(data.newsletters || []);
+    })
+    .catch(function(){ showLoadError(); });
 </script>
 
 </body>
