@@ -84,7 +84,9 @@ export default async function handler(req, res) {
       console.error('admin list error:', err);
       const configErr = /not configured/i.test(err.message || '');
       res.status(configErr ? 503 : 500).json({
-        error: configErr ? 'Storage is not set up yet. Finish the Supabase setup first.' : 'Failed to load.',
+        error: configErr
+          ? 'Storage is not set up yet. Finish the Supabase setup first.'
+          : 'Failed to load: ' + (err.message || 'unknown error'),
       });
     }
     return;
@@ -136,6 +138,8 @@ export default async function handler(req, res) {
       res.status(503).json({ error: 'Storage is not set up yet, so changes can’t be saved. Finish the Supabase setup first.' });
       return;
     }
-    res.status(500).json({ error: 'Something went wrong saving your change.' });
+    // This endpoint is admin-password-protected — safe to surface the real
+    // error (e.g. a missing column) so problems are diagnosable from the UI.
+    res.status(500).json({ error: 'Something went wrong saving your change: ' + (err.message || 'unknown error') });
   }
 }

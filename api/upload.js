@@ -100,6 +100,7 @@ export default async function handler(req, res) {
       res.status(503).json({ error: 'Storage is not set up yet. Finish the Supabase setup first.' });
       return;
     }
-    res.status(500).json({ error: 'Something went wrong uploading the image.' });
+    // Admin-password-protected — safe to surface the real error.
+    res.status(500).json({ error: 'Something went wrong uploading the image: ' + (err.message || 'unknown error') });
   }
 }
