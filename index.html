@@ -135,6 +135,8 @@
     font-family:'Playfair Display', serif;
     font-size:1.15rem;
     font-weight:600;
+    text-decoration:none;
+    cursor:pointer;
   }
   .brand span{color:var(--gold);}
   nav.main-nav{
@@ -444,7 +446,7 @@
   <div id="site">
     <header class="site-header">
       <div class="header-inner">
-        <div class="brand">Cole <span>Jaeger</span></div>
+        <a class="brand" data-view="home">Cole <span>Jaeger</span></a>
         <button class="nav-toggle" id="navToggle">Menu</button>
         <nav class="main-nav" id="mainNav">
           <a data-view="home" class="active">Home</a>
