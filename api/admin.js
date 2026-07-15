@@ -1,24 +1,14 @@
 import { COLLECTIONS, getCollection, setCollection } from '../lib/store.js';
+import { makeId, readBody } from '../lib/http.js';
+
+// The private prayer-intention inbox. Admin can read (list) and delete these,
+// but never add/edit them — they're created only via the public /api/submit.
+const ADMIN_READABLE = [...COLLECTIONS, 'submissions'];
 
 // Insert new items at the front for everything except books, which read as a
 // running reading list (oldest first).
 function prepends(collection) {
   return collection !== 'books';
-}
-
-function makeId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
-
-async function readBody(req) {
-  if (req.body != null) {
-    if (typeof req.body === 'object') return req.body;
-    if (typeof req.body === 'string') return req.body ? JSON.parse(req.body) : {};
-  }
-  const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
-  const raw = Buffer.concat(chunks).toString('utf8');
-  return raw ? JSON.parse(raw) : {};
 }
 
 // Keep only the fields we expect for each collection, and coerce to strings so a
@@ -74,7 +64,29 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (!COLLECTIONS.includes(collection)) {
+  // Read a collection (used by the admin UI, including the private inbox).
+  if (action === 'list') {
+    if (!ADMIN_READABLE.includes(collection)) {
+      res.status(400).json({ error: 'Unknown collection.' });
+      return;
+    }
+    try {
+      const items = await getCollection(collection);
+      res.status(200).json({ ok: true, collection, items });
+    } catch (err) {
+      console.error('admin list error:', err);
+      const configErr = /not configured/i.test(err.message || '');
+      res.status(configErr ? 503 : 500).json({
+        error: configErr ? 'Storage is not set up yet. Finish the Upstash Redis setup first.' : 'Failed to load.',
+      });
+    }
+    return;
+  }
+
+  // Mutations. Delete is allowed on the inbox too; add/update only on the
+  // public, editable collections.
+  const allowed = action === 'delete' ? ADMIN_READABLE : COLLECTIONS;
+  if (!allowed.includes(collection)) {
     res.status(400).json({ error: 'Unknown collection.' });
     return;
   }

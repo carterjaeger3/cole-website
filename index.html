@@ -312,6 +312,21 @@
     padding:26px; margin-top:8px; margin-bottom:64px; color:var(--mist); font-size:0.9rem;
   }
   .prayer-form-note a{color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold);}
+  .prayer-form-note h3{font-size:1.15rem; color:var(--white); margin-bottom:8px; font-weight:600;}
+  .prayer-form-note form{display:flex; flex-direction:column; gap:12px; margin-top:18px;}
+  .prayer-form-note input, .prayer-form-note textarea{
+    background: rgba(255,255,255,0.05); border:1px solid var(--line); color:var(--white);
+    font-family:'Inter', sans-serif; font-size:0.95rem; padding:11px 13px; border-radius:6px; width:100%;
+  }
+  .prayer-form-note textarea{resize:vertical; min-height:96px; line-height:1.5;}
+  .prayer-form-note input:focus, .prayer-form-note textarea:focus{outline:none; border-color:var(--gold);}
+  .prayer-form-note input::placeholder, .prayer-form-note textarea::placeholder{color:var(--mist-dim);}
+  .prayer-form-note .hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0;}
+  .prayer-form-note button.btn-primary{align-self:flex-start; border:none; cursor:pointer; font-family:'Inter', sans-serif;}
+  .prayer-form-note button.btn-primary:disabled{opacity:0.6; cursor:default;}
+  .submit-msg{font-size:0.88rem; min-height:1.2em;}
+  .submit-msg.ok{color:#9fd6b6;}
+  .submit-msg.err{color:#e2a0a0;}
 
   .book-item{
     display:grid; grid-template-columns:64px 1fr;
@@ -477,7 +492,16 @@
           <p class="loading">Loading…</p>
         </div>
         <div class="prayer-form-note">
-          Have a prayer intention? Email it to <a href="mailto:cole@example.com">cole@example.com</a> and it may be added here. (Swap in Cole's real contact — a real submission form can be added once this moves into Claude Code.)
+          <h3>Submit a Prayer Intention</h3>
+          <p>Is there something you'd like Cole to pray for? Share it below. Your intention goes privately to Cole — it won't be posted on this page.</p>
+          <form id="prayer-submit-form" autocomplete="off">
+            <input name="name" type="text" placeholder="Your name (optional)" maxlength="100" />
+            <input name="contact" type="text" placeholder="Email or phone, if you'd like a reply (optional)" maxlength="150" />
+            <textarea name="intention" placeholder="How can we pray for you?" maxlength="2000" required></textarea>
+            <input name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp" />
+            <button type="submit" class="btn btn-primary">Send intention</button>
+            <div class="submit-msg" id="prayer-submit-msg" role="status" aria-live="polite"></div>
+          </form>
         </div>
       </section>
 
@@ -618,6 +642,43 @@
     ['prayer-list','book-list','newsletter-grid','verse-current','travel-list'].forEach(function(id){
       const el = document.getElementById(id);
       if(el) el.innerHTML = '<p class="load-error">Couldn’t load this content. Please refresh.</p>';
+    });
+  }
+
+  // ---- Prayer intention submission form ----
+  const psForm = document.getElementById('prayer-submit-form');
+  if(psForm){
+    psForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      const msg = document.getElementById('prayer-submit-msg');
+      const btn = psForm.querySelector('button[type="submit"]');
+      const fd = new FormData(psForm);
+      const payload = {
+        name: fd.get('name') || '',
+        contact: fd.get('contact') || '',
+        intention: fd.get('intention') || '',
+        website: fd.get('website') || ''
+      };
+      btn.disabled = true;
+      msg.className = 'submit-msg';
+      msg.textContent = 'Sending…';
+      fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, data: d }; }); })
+        .then(function(r){
+          if(!r.ok) throw new Error((r.data && r.data.error) || 'Something went wrong.');
+          psForm.reset();
+          msg.className = 'submit-msg ok';
+          msg.textContent = 'Thank you — your intention has been received. Cole will be praying.';
+        })
+        .catch(function(err){
+          msg.className = 'submit-msg err';
+          msg.textContent = err.message;
+        })
+        .finally(function(){ btn.disabled = false; });
     });
   }
 

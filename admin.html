@@ -133,6 +133,13 @@
       <button class="btn btn-ghost btn-small" id="signout">Sign out</button>
     </div>
 
+    <!-- PRAYER INTENTION INBOX (submissions from visitors) -->
+    <section class="block">
+      <h2>Prayer Intentions <span class="badge">Inbox</span></h2>
+      <p class="block-sub">Intentions submitted by visitors through the site. These are private — they never appear on any public page. Delete them once you've prayed.</p>
+      <div class="list" data-list="submissions"></div>
+    </section>
+
     <!-- VERSE OF THE WEEK -->
     <section class="block">
       <h2>Verse of the Week</h2>
@@ -338,8 +345,19 @@
 
   document.getElementById('signout').addEventListener('click', signOut);
 
+  function fmtDate(iso){
+    try { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
+    catch { return iso || ''; }
+  }
+
   // ---- Rendering the lists ----
   const RENDERERS = {
+    submissions: (item) => ({
+      meta: [item.name ? esc(item.name) : 'Anonymous', item.contact ? esc(item.contact) : '', fmtDate(item.date)]
+        .filter(Boolean).join('  ·  '),
+      title: esc(item.intention),
+      detail: '',
+    }),
     verses: (item, i) => ({
       title: '“' + esc(item.text) + '”',
       detail: esc(item.ref),
@@ -379,16 +397,20 @@
     container.innerHTML = items.map((item, i) => {
       const r = RENDERERS[collection](item, i);
       const badge = r.current ? '<span class="badge">Current</span>' : '';
-      const metaText = collection === 'verses' ? (i === 0 ? 'Current verse' : 'Past verse') : r.meta;
+      // Renderers already escape their fields; the verse labels are safe literals.
+      const metaText = collection === 'verses' ? (i === 0 ? 'Current verse' : 'Past verse') : (r.meta || '');
+      // The inbox is read-only — no Edit button, just Delete.
+      const editButton = collection === 'submissions' ? '' :
+        '<button class="btn btn-ghost btn-small" data-edit="' + collection + '" data-id="' + esc(item.id) + '">Edit</button>';
       return (
         '<div class="row">' +
           '<div class="row-body">' +
-            '<div class="row-meta">' + esc(metaText) + '</div>' +
+            (metaText ? '<div class="row-meta">' + metaText + '</div>' : '') +
             '<div class="row-title">' + r.title + badge + '</div>' +
             (r.detail ? '<div class="row-detail">' + r.detail + '</div>' : '') +
           '</div>' +
           '<div class="row-actions">' +
-            '<button class="btn btn-ghost btn-small" data-edit="' + collection + '" data-id="' + esc(item.id) + '">Edit</button>' +
+            editButton +
             '<button class="btn-danger" data-delete="' + collection + '" data-id="' + esc(item.id) + '">Delete</button>' +
           '</div>' +
         '</div>'
@@ -403,6 +425,14 @@
       state[c] = data[c] || [];
       renderList(c);
     }
+    // The private inbox isn't in the public feed — fetch it with the password.
+    try {
+      const inbox = await api({ action: 'list', collection: 'submissions' });
+      state.submissions = inbox.items || [];
+    } catch {
+      state.submissions = [];
+    }
+    renderList('submissions');
   }
 
   // ---- Forms: add + edit ----
