@@ -78,12 +78,19 @@
   form.editor .form-actions{display:flex; gap:10px; align-items:center; margin-top:6px;}
   form.editor .editing-note{font-size:0.8rem; color:var(--gold); display:none;}
   form.editor.is-editing .editing-note{display:inline;}
-  form.editor .field .current-image{
-    display:none; max-width:120px; max-height:160px; border-radius:6px;
-    border:1px solid var(--line); margin-bottom:8px; object-fit:cover;
-  }
-  form.editor .field .current-image.show{display:block;}
   form.editor .field-hint{font-size:0.78rem; color:var(--mist-dim); margin-top:6px;}
+  .image-gallery{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+  .image-gallery:empty{display:none; margin:0;}
+  .image-gallery .thumb{position:relative; width:72px; height:72px;}
+  .image-gallery .thumb img{
+    width:100%; height:100%; object-fit:cover; border-radius:6px;
+    border:1px solid var(--line); display:block;
+  }
+  .image-gallery .thumb button{
+    position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%;
+    background:var(--crimson); color:#fff; border:none; cursor:pointer; font-size:13px; line-height:1;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
 
   .list{display:flex; flex-direction:column; gap:12px;}
   .row{background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:8px; padding:16px 18px;
@@ -198,10 +205,10 @@
           <input name="link" placeholder="https://…" />
         </div>
         <div class="field">
-          <label>Header image (optional)</label>
-          <img class="current-image" alt="Current header image" />
-          <input type="file" name="imageFile" accept="image/*" />
-          <input type="hidden" name="image_url" />
+          <label>Images (optional — you can add more than one)</label>
+          <div class="image-gallery" data-gallery></div>
+          <input type="file" name="imageFiles" accept="image/*" multiple />
+          <input type="hidden" name="image_urls" value="[]" />
         </div>
         <div class="form-actions">
           <button class="btn" type="submit" data-add-label="Add newsletter" data-edit-label="Save changes">Add newsletter</button>
@@ -235,10 +242,10 @@
           <textarea name="content" placeholder="Write as much as you'd like about this trip."></textarea>
         </div>
         <div class="field">
-          <label>Photo (optional)</label>
-          <img class="current-image" alt="Current photo" />
-          <input type="file" name="imageFile" accept="image/*" />
-          <input type="hidden" name="image_url" />
+          <label>Photos (optional — you can add more than one)</label>
+          <div class="image-gallery" data-gallery></div>
+          <input type="file" name="imageFiles" accept="image/*" multiple />
+          <input type="hidden" name="image_urls" value="[]" />
         </div>
         <div class="form-actions">
           <button class="btn" type="submit" data-add-label="Add trip" data-edit-label="Save changes">Add trip</button>
@@ -295,10 +302,10 @@
           <textarea name="content" placeholder="Write as much as you'd like about this book."></textarea>
         </div>
         <div class="field">
-          <label>Cover image (optional — leave blank and the site will try to find the real cover automatically)</label>
-          <img class="current-image" alt="Current cover" />
-          <input type="file" name="imageFile" accept="image/*" />
-          <input type="hidden" name="image_url" />
+          <label>Cover images (optional — you can add more than one; leave blank and the site will try to find the real cover automatically)</label>
+          <div class="image-gallery" data-gallery></div>
+          <input type="file" name="imageFiles" accept="image/*" multiple />
+          <input type="hidden" name="image_urls" value="[]" />
         </div>
         <div class="form-actions">
           <button class="btn" type="submit" data-add-label="Add book" data-edit-label="Save changes">Add book</button>
@@ -419,7 +426,7 @@
     books: (item) => ({
       meta: esc(item.author),
       title: esc(item.title),
-      detail: esc(item.summary) + (!item.image_url ? '  ·  <span class="no-cover-note">No cover found — please upload one</span>' : ''),
+      detail: esc(item.summary) + (!(item.image_urls && item.image_urls.length) ? '  ·  <span class="no-cover-note">No cover found — please upload one</span>' : ''),
     }),
   };
 
@@ -442,8 +449,8 @@
       // The inbox is read-only — no Edit button, just Delete.
       const editButton = collection === 'submissions' ? '' :
         '<button class="btn btn-ghost btn-small" data-edit="' + collection + '" data-id="' + esc(item.id) + '">Edit</button>';
-      const thumb = (IMAGE_COLLECTIONS.includes(collection) && item.image_url)
-        ? '<img class="row-thumb" src="' + esc(item.image_url) + '" alt="" />' : '';
+      const thumb = (IMAGE_COLLECTIONS.includes(collection) && item.image_urls && item.image_urls[0])
+        ? '<img class="row-thumb" src="' + esc(item.image_urls[0]) + '" alt="" />' : '';
       return (
         '<div class="row">' +
           thumb +
@@ -478,19 +485,50 @@
     renderList('submissions');
   }
 
+  // ---- Image gallery helpers (shared by books/travels/newsletters forms) ----
+  function getImageUrls(form){
+    const field = form.querySelector('[name="image_urls"]');
+    if (!field) return [];
+    try {
+      const parsed = JSON.parse(field.value || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
+  }
+  function setImageUrls(form, urls){
+    const field = form.querySelector('[name="image_urls"]');
+    if (field) field.value = JSON.stringify(urls);
+    renderGallery(form);
+  }
+  function renderGallery(form){
+    const gallery = form.querySelector('[data-gallery]');
+    if (!gallery) return;
+    const urls = getImageUrls(form);
+    gallery.innerHTML = urls.map((url, i) =>
+      '<div class="thumb"><img src="' + esc(url) + '" alt="" />' +
+      '<button type="button" data-remove-image="' + i + '" aria-label="Remove image">&times;</button></div>'
+    ).join('');
+  }
+
+  function fileToBase64(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(',')[1]);
+      reader.onerror = () => reject(new Error('Could not read the selected file.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
   // ---- Forms: add + edit ----
   document.querySelectorAll('form.editor').forEach((form) => {
     const collection = form.dataset.collection;
     const submitBtn = form.querySelector('button[type="submit"]');
-
-    const preview = form.querySelector('.current-image');
 
     function resetForm(){
       form.reset();
       form.querySelector('[name="id"]').value = '';
       form.classList.remove('is-editing');
       submitBtn.textContent = submitBtn.dataset.addLabel;
-      if (preview){ preview.classList.remove('show'); preview.removeAttribute('src'); }
+      renderGallery(form); // re-sync gallery display with the reset hidden field value
     }
 
     form.querySelector('.cancel-edit').addEventListener('click', resetForm);
@@ -499,31 +537,40 @@
       e.preventDefault();
       const id = form.querySelector('[name="id"]').value;
       const fileInput = form.querySelector('input[type="file"]');
-      const imageUrlField = form.querySelector('[name="image_url"]');
       submitBtn.disabled = true;
       try {
-        const file = fileInput && fileInput.files && fileInput.files[0];
-        if (file) {
-          if (file.size > 4 * 1024 * 1024) {
-            throw new Error('That image is too large — please use a file under 4MB.');
+        const files = fileInput && fileInput.files ? Array.from(fileInput.files) : [];
+        if (files.length) {
+          const currentUrls = getImageUrls(form);
+          if (currentUrls.length + files.length > 6) {
+            throw new Error('You can have up to 6 images per item — remove one before adding more.');
           }
-          const dataBase64 = await fileToBase64(file);
-          const res = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
-            body: JSON.stringify({ dataBase64, contentType: file.type }),
-          });
-          const uploadData = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(uploadData.error || 'Image upload failed.');
-          if (imageUrlField) imageUrlField.value = uploadData.url;
+          for (const file of files) {
+            if (file.size > 4 * 1024 * 1024) {
+              throw new Error('"' + file.name + '" is too large — please use files under 4MB.');
+            }
+            const dataBase64 = await fileToBase64(file);
+            const res = await fetch('/api/upload', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+              body: JSON.stringify({ dataBase64, contentType: file.type }),
+            });
+            const uploadData = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(uploadData.error || 'Image upload failed.');
+            currentUrls.push(uploadData.url);
+          }
+          setImageUrls(form, currentUrls);
+          fileInput.value = '';
         }
 
-        // Captured after any upload above, so it reflects the current image_url.
         const fd = new FormData(form);
         const item = {};
         for (const [key, val] of fd.entries()){
-          if (key === 'id' || key === 'imageFile') continue;
+          if (key === 'id' || key === 'imageFiles' || key === 'image_urls') continue;
           item[key] = val;
+        }
+        if (form.querySelector('[name="image_urls"]')) {
+          item.image_urls = getImageUrls(form);
         }
 
         const payload = id
@@ -546,19 +593,20 @@
     });
   });
 
-  function fileToBase64(file){
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result).split(',')[1]);
-      reader.onerror = () => reject(new Error('Could not read the selected file.'));
-      reader.readAsDataURL(file);
-    });
-  }
-
   // ---- Edit / Delete (event delegation) ----
   panel.addEventListener('click', async (e) => {
     const editBtn = e.target.closest('[data-edit]');
     const delBtn = e.target.closest('[data-delete]');
+    const removeImgBtn = e.target.closest('[data-remove-image]');
+
+    if (removeImgBtn){
+      const form = removeImgBtn.closest('form.editor');
+      const idx = Number(removeImgBtn.dataset.removeImage);
+      const urls = getImageUrls(form);
+      urls.splice(idx, 1);
+      setImageUrls(form, urls);
+      return;
+    }
 
     if (editBtn){
       const collection = editBtn.dataset.edit;
@@ -568,12 +616,11 @@
       const form = document.querySelector('form.editor[data-collection="' + collection + '"]');
       for (const el of form.elements){
         if (el.type === 'file') continue;
+        if (el.name === 'image_urls') continue;
         if (el.name && el.name !== 'id' && item[el.name] !== undefined) el.value = item[el.name];
       }
-      const preview = form.querySelector('.current-image');
-      if (preview){
-        if (item.image_url){ preview.src = item.image_url; preview.classList.add('show'); }
-        else { preview.classList.remove('show'); preview.removeAttribute('src'); }
+      if (form.querySelector('[name="image_urls"]')) {
+        setImageUrls(form, item.image_urls || []);
       }
       form.querySelector('[name="id"]').value = id;
       form.classList.add('is-editing');

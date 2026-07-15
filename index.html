@@ -666,7 +666,7 @@
     if(!items.length){ el.innerHTML = '<p class="loading">No books listed yet.</p>'; return; }
     el.innerHTML = items.map(b =>
       '<a class="book-item" href="/books/' + encodeURIComponent(b.id) + '">' +
-        (b.image_url ? '<img class="book-cover" src="' + esc(b.image_url) + '" alt="" />' : '<div class="book-cover"></div>') +
+        (b.image_urls && b.image_urls[0] ? '<img class="book-cover" src="' + esc(b.image_urls[0]) + '" alt="" />' : '<div class="book-cover"></div>') +
         '<div>' +
           '<h3>' + esc(b.title) + '</h3>' +
           '<div class="b-author">' + esc(b.author) + '</div>' +
@@ -696,7 +696,7 @@
       '<a class="timeline-item" href="/travels/' + encodeURIComponent(t.id) + '">' +
         '<div class="t-date">' + esc(t.date) + '</div>' +
         '<div>' +
-          (t.image_url ? '<img class="travel-thumb" src="' + esc(t.image_url) + '" alt="" />' : '') +
+          (t.image_urls && t.image_urls[0] ? '<img class="travel-thumb" src="' + esc(t.image_urls[0]) + '" alt="" />' : '') +
           '<h3>' + esc(t.title) + '</h3>' +
           '<p>' + esc(t.summary) + '</p>' +
         '</div>' +
@@ -710,7 +710,7 @@
     el.innerHTML = items.map(n =>
       '<div class="card">' +
         '<a class="card-click" href="/newsletters/' + encodeURIComponent(n.id) + '">' +
-          (n.image_url ? '<img class="card-image" src="' + esc(n.image_url) + '" alt="" />' : '') +
+          (n.image_urls && n.image_urls[0] ? '<img class="card-image" src="' + esc(n.image_urls[0]) + '" alt="" />' : '') +
           '<div class="meta">' + esc(n.month) + '</div>' +
           '<h3>' + esc(n.title) + '</h3>' +
           '<p>' + esc(n.summary) + '</p>' +

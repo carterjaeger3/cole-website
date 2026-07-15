@@ -6,33 +6,40 @@ import { fetchBookCover } from '../lib/bookCover.js';
 // but never add/edit them — they're created only via the public /api/submit.
 const ADMIN_READABLE = [...COLLECTIONS, 'submissions'];
 
+const MAX_IMAGES = 6;
+
+function cleanImageUrls(v) {
+  const arr = Array.isArray(v) ? v : [];
+  return arr.map((s) => (s == null ? '' : String(s).trim())).filter(Boolean).slice(0, MAX_IMAGES);
+}
+
 function cleanItem(collection, item) {
   const s = (v) => (v == null ? '' : String(v).trim());
   switch (collection) {
     case 'prayers':
       return { text: s(item.text), date: s(item.date) };
     case 'books':
-      return { title: s(item.title), author: s(item.author), summary: s(item.summary), content: s(item.content), image_url: s(item.image_url) };
+      return { title: s(item.title), author: s(item.author), summary: s(item.summary), content: s(item.content), image_urls: cleanImageUrls(item.image_urls) };
     case 'verses':
       return { text: s(item.text), ref: s(item.ref) };
     case 'newsletters':
-      return { month: s(item.month), title: s(item.title), summary: s(item.summary), content: s(item.content), link: s(item.link), image_url: s(item.image_url) };
+      return { month: s(item.month), title: s(item.title), summary: s(item.summary), content: s(item.content), link: s(item.link), image_urls: cleanImageUrls(item.image_urls) };
     case 'travels':
-      return { date: s(item.date), title: s(item.title), summary: s(item.summary), content: s(item.content), image_url: s(item.image_url) };
+      return { date: s(item.date), title: s(item.title), summary: s(item.summary), content: s(item.content), image_urls: cleanImageUrls(item.image_urls) };
     default:
       return {};
   }
 }
 
-// If a book is being saved without an image, try to find a real cover
-// automatically. Mutates `cleaned.image_url` in place when one is found.
+// If a book is being saved with no images at all, try to find a real cover
+// automatically. Mutates `cleaned.image_urls` in place when one is found.
 // Returns true only if a lookup was attempted and came up empty, so the
 // admin UI can show a "please upload one" note.
 async function tryAutoCover(collection, cleaned) {
-  if (collection !== 'books' || cleaned.image_url) return false;
+  if (collection !== 'books' || (cleaned.image_urls && cleaned.image_urls.length)) return false;
   const cover = await fetchBookCover(cleaned.title, cleaned.author);
   if (cover) {
-    cleaned.image_url = cover;
+    cleaned.image_urls = [cover];
     return false;
   }
   return true;

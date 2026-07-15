@@ -100,8 +100,11 @@
     margin-bottom:28px; border-bottom:1px solid transparent; transition:border-color 0.15s ease, color 0.15s ease;
   }
   .detail-back:hover{color:var(--white); border-bottom-color:var(--gold);}
+  .detail-gallery{
+    display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:32px;
+  }
   .detail-image{
-    display:block; max-width:220px; width:100%; margin:0 auto 32px;
+    display:block; width:220px; max-width:100%;
     border-radius:10px; border:1px solid var(--line);
   }
   .detail-title{font-size:2.1rem; line-height:1.2; margin:10px 0 8px;}
@@ -238,6 +241,17 @@
     return '';
   }
 
+  function renderGallery(urls){
+    if (!urls || !urls.length) return '';
+    return '<div class="detail-gallery">' +
+      urls.map((u) =>
+        '<a href="' + esc(u) + '" target="_blank" rel="noopener">' +
+          '<img class="detail-image" src="' + esc(u) + '" alt="" />' +
+        '</a>'
+      ).join('') +
+      '</div>';
+  }
+
   function renderItem(type, item){
     const meta = TYPE_META[type];
     document.title = item.title + ' — Cole Jaeger';
@@ -245,7 +259,7 @@
     const line = metaLine(type, item);
     root.innerHTML =
       '<a class="detail-back" href="' + meta.backHref + '">← Back to ' + meta.backLabel + '</a>' +
-      (item.image_url ? '<img class="detail-image" src="' + esc(item.image_url) + '" alt="" />' : '') +
+      renderGallery(item.image_urls) +
       '<div class="eyebrow">' + meta.label + '</div>' +
       '<h1 class="detail-title">' + esc(item.title) + '</h1>' +
       (line ? '<div class="detail-meta">' + esc(line) + '</div>' : '') +
