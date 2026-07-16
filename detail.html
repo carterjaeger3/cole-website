@@ -73,7 +73,7 @@
   }
   .header-inner{
     max-width:1080px; margin:0 auto;
-    display:grid; grid-template-columns:auto 1fr auto auto;
+    display:grid; grid-template-columns:auto 1fr auto;
     align-items:center; gap:16px;
     padding:18px 24px;
   }
@@ -86,14 +86,7 @@
     transition: color 0.15s ease, border-color 0.15s ease; font-family:'Inter', sans-serif;
   }
   nav.main-nav a:hover{color:var(--white); border-bottom-color:var(--gold);}
-  .support-inline{display:none;}
-  .support-link{
-    grid-column:3; justify-self:end; text-decoration:none; font-size:0.86rem; color:var(--mist);
-    letter-spacing:0.02em; white-space:nowrap; padding-bottom:4px; border-bottom:1px solid transparent;
-    transition: color 0.15s ease, border-color 0.15s ease; font-family:'Inter', sans-serif;
-  }
-  .support-link:hover{color:var(--white); border-bottom-color:var(--gold);}
-  .nav-toggle{grid-column:4; display:none;}
+  .nav-toggle{grid-column:3; display:none;}
 
   main{max-width:1080px; margin:0 auto; padding:0 24px;}
 
@@ -139,8 +132,6 @@
       display:block; background:none; border:1px solid var(--line);
       color:var(--white); border-radius:5px; padding:8px 12px; cursor:pointer;
     }
-    .support-inline{display:block;}
-    .support-link{display:none;}
   }
 </style>
 </head>
@@ -173,9 +164,7 @@
           <a href="/#newsletters">Newsletters</a>
           <a href="/#travels">Mission Trips</a>
           <a href="/#books">Books</a>
-          <a class="support-inline" href="https://www.spo.org/support-cole-jaeger" target="_blank" rel="noopener">Support Cole ↗</a>
         </nav>
-        <a class="support-link" href="https://www.spo.org/support-cole-jaeger" target="_blank" rel="noopener">Support Cole ↗</a>
       </div>
     </header>
 
