@@ -26,6 +26,7 @@ function cleanItem(collection, item) {
         content: s(item.content),
         image_urls: cleanImageUrls(item.image_urls),
         type: MEDIA_TYPES.includes(item.type) ? item.type : 'book',
+        link: s(item.link),
       };
     case 'verses':
       return { text: s(item.text), ref: s(item.ref) };

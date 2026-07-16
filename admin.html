@@ -314,6 +314,10 @@
           <textarea name="content" placeholder="Write as much as you'd like."></textarea>
         </div>
         <div class="field">
+          <label>Link (optional — the article, podcast episode, or video itself)</label>
+          <input name="link" placeholder="https://…" />
+        </div>
+        <div class="field">
           <label>Images (optional — you can add more than one; for books, leave blank and the site will try to find the real cover automatically)</label>
           <div class="image-gallery" data-gallery></div>
           <input type="file" name="imageFiles" accept="image/*" multiple />
@@ -439,7 +443,9 @@
     books: (item) => ({
       meta: esc(item.creator) + '  ·  ' + esc(TYPE_LABELS[item.type] || 'Book'),
       title: esc(item.title),
-      detail: esc(item.summary) + (item.type === 'book' && !(item.image_urls && item.image_urls.length) ? '  ·  <span class="no-cover-note">No cover found — please upload one</span>' : ''),
+      detail: esc(item.summary) +
+        (item.link ? '  ·  ' + esc(item.link) : '') +
+        (item.type === 'book' && !(item.image_urls && item.image_urls.length) ? '  ·  <span class="no-cover-note">No cover found — please upload one</span>' : ''),
     }),
   };
 

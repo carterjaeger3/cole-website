@@ -240,6 +240,7 @@
   // Books & Media covers more than books now — show the item's actual type
   // (Book/Podcast/Video/Article) instead of the fixed "Book" label.
   const MEDIA_TYPE_LABELS = { book: 'Book', podcast: 'Podcast', video: 'Video', article: 'Article' };
+  const MEDIA_LINK_LABELS = { book: 'View listing ↗', podcast: 'Listen to the episode ↗', video: 'Watch the video ↗', article: 'Read the article ↗' };
 
   function eyebrowLabel(type, item){
     if(type === 'books') return MEDIA_TYPE_LABELS[item.type] || 'Book';
@@ -278,6 +279,9 @@
       '<div class="detail-content">' + esc(item.content || item.summary || '') + '</div>' +
       (type === 'newsletters' && item.link
         ? '<a class="detail-external" href="' + esc(item.link) + '" target="_blank" rel="noopener">View full newsletter ↗</a>'
+        : '') +
+      (type === 'books' && item.link
+        ? '<a class="detail-external" href="' + esc(item.link) + '" target="_blank" rel="noopener">' + esc(MEDIA_LINK_LABELS[item.type] || 'View ↗') + '</a>'
         : '');
   }
 
