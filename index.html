@@ -391,6 +391,11 @@
   .book-item h3{font-size:1.02rem;}
   .book-item .b-author{color:var(--mist-dim); font-size:0.8rem; margin-bottom:8px;}
   .book-item p{color:var(--mist); font-size:0.9rem;}
+  .media-group-label{
+    font-size:0.78rem; text-transform:uppercase; letter-spacing:0.12em;
+    color:var(--gold); margin:32px 0 4px; font-family:'Inter', sans-serif; font-weight:600;
+  }
+  .media-group-label:first-child{margin-top:0;}
 
   .loading{color:var(--mist-dim); font-size:0.88rem;}
   .load-error{color:#e2a0a0; font-size:0.88rem;}
@@ -452,7 +457,7 @@
           <a data-view="home" class="active">Home</a>
           <a data-view="newsletters">Newsletters</a>
           <a data-view="travels">Mission Trips</a>
-          <a data-view="books">Books</a>
+          <a data-view="books">Books & Media</a>
           <a class="support-inline" href="https://www.spo.org" target="_blank" rel="noopener">Learn More About SPO ↗</a>
         </nav>
         <a class="support-link" href="https://www.spo.org" target="_blank" rel="noopener">Learn More About SPO ↗</a>
@@ -567,8 +572,8 @@
 
       <section class="view" id="books">
         <div class="section-head">
-          <div class="eyebrow">Reading List</div>
-          <p>Books that have shaped Cole's faith, with a few thoughts on each.</p>
+          <div class="eyebrow">Books & Media</div>
+          <p>Books, podcasts, videos, and articles that have shaped Cole's faith, with a few thoughts on each.</p>
         </div>
         <div id="book-list" style="margin-bottom:64px;">
           <p class="loading">Loading…</p>
@@ -662,19 +667,32 @@
     ).join('');
   }
 
+  const MEDIA_TYPE_LABELS = { book: 'Books', podcast: 'Podcasts', video: 'Videos', article: 'Articles' };
+  const MEDIA_TYPE_ORDER = ['book', 'podcast', 'video', 'article'];
+
+  function renderBookItem(b){
+    return '<a class="book-item" href="/books/' + encodeURIComponent(b.id) + '">' +
+      (b.image_urls && b.image_urls[0] ? '<img class="book-cover" src="' + esc(b.image_urls[0]) + '" alt="" />' : '<div class="book-cover"></div>') +
+      '<div>' +
+        '<h3>' + esc(b.title) + '</h3>' +
+        '<div class="b-author">' + esc(b.creator) + '</div>' +
+        '<p>' + esc(b.summary) + '</p>' +
+      '</div>' +
+    '</a>';
+  }
+
   function renderBooks(items){
     const el = document.getElementById('book-list');
-    if(!items.length){ el.innerHTML = '<p class="loading">No books listed yet.</p>'; return; }
-    el.innerHTML = items.map(b =>
-      '<a class="book-item" href="/books/' + encodeURIComponent(b.id) + '">' +
-        (b.image_urls && b.image_urls[0] ? '<img class="book-cover" src="' + esc(b.image_urls[0]) + '" alt="" />' : '<div class="book-cover"></div>') +
-        '<div>' +
-          '<h3>' + esc(b.title) + '</h3>' +
-          '<div class="b-author">' + esc(b.author) + '</div>' +
-          '<p>' + esc(b.summary) + '</p>' +
-        '</div>' +
-      '</a>'
-    ).join('');
+    if(!items.length){ el.innerHTML = '<p class="loading">Nothing listed yet.</p>'; return; }
+    const groups = {};
+    items.forEach(function(b){
+      const t = MEDIA_TYPE_LABELS[b.type] ? b.type : 'book';
+      (groups[t] = groups[t] || []).push(b);
+    });
+    el.innerHTML = MEDIA_TYPE_ORDER.filter(function(t){ return groups[t] && groups[t].length; }).map(function(t){
+      return '<h3 class="media-group-label">' + MEDIA_TYPE_LABELS[t] + '</h3>' +
+        groups[t].map(renderBookItem).join('');
+    }).join('');
   }
 
   function renderVerses(items){

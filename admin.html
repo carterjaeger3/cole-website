@@ -282,36 +282,45 @@
       <div class="list" data-list="prayers"></div>
     </section>
 
-    <!-- BOOKS -->
+    <!-- BOOKS & MEDIA -->
     <section class="block">
-      <h2>Books</h2>
-      <p class="block-sub">Spiritual reading list. Added to the end of the list.</p>
+      <h2>Books &amp; Media</h2>
+      <p class="block-sub">Books, podcasts, videos, and articles that have shaped Cole's faith. Added to the end of the list.</p>
       <form class="editor" data-collection="books">
         <input type="hidden" name="id" />
+        <div class="field">
+          <label>Type</label>
+          <select name="type">
+            <option value="book" selected>Book</option>
+            <option value="podcast">Podcast</option>
+            <option value="video">Video</option>
+            <option value="article">Article</option>
+          </select>
+        </div>
         <div class="field">
           <label>Title</label>
           <input name="title" placeholder="Introduction to the Devout Life" required />
         </div>
         <div class="field">
-          <label>Author</label>
-          <input name="author" placeholder="St. Francis de Sales" required />
+          <label>Creator (author, host, channel, publication…)</label>
+          <input name="creator" placeholder="St. Francis de Sales" required />
         </div>
         <div class="field">
-          <label>Short summary (shown on the book list)</label>
-          <textarea name="summary" placeholder="A sentence or two on why this book mattered." required></textarea>
+          <label>Short summary (shown on the list)</label>
+          <textarea name="summary" placeholder="A sentence or two on why this mattered." required></textarea>
         </div>
         <div class="field">
-          <label>Full write-up (shown on the book's own page — optional, falls back to the summary if left blank)</label>
-          <textarea name="content" placeholder="Write as much as you'd like about this book."></textarea>
+          <label>Full write-up (shown on its own page — optional, falls back to the summary if left blank)</label>
+          <textarea name="content" placeholder="Write as much as you'd like."></textarea>
         </div>
         <div class="field">
-          <label>Cover images (optional — you can add more than one; leave blank and the site will try to find the real cover automatically)</label>
+          <label>Images (optional — you can add more than one; for books, leave blank and the site will try to find the real cover automatically)</label>
           <div class="image-gallery" data-gallery></div>
           <input type="file" name="imageFiles" accept="image/*" multiple />
           <input type="hidden" name="image_urls" value="[]" />
         </div>
         <div class="form-actions">
-          <button class="btn" type="submit" data-add-label="Add book" data-edit-label="Save changes">Add book</button>
+          <button class="btn" type="submit" data-add-label="Add entry" data-edit-label="Save changes">Add entry</button>
           <button class="btn btn-ghost btn-small cancel-edit" type="button">Cancel</button>
           <span class="editing-note">Editing existing item…</span>
         </div>
@@ -399,6 +408,7 @@
   }
 
   // ---- Rendering the lists ----
+  const TYPE_LABELS = { book: 'Book', podcast: 'Podcast', video: 'Video', article: 'Article' };
   const RENDERERS = {
     submissions: (item) => ({
       meta: [item.anonymous ? 'Anonymous' : (esc(item.name) || 'No name given'), item.anonymous ? '' : esc(item.contact), fmtDate(item.created_at)]
@@ -427,9 +437,9 @@
       detail: '',
     }),
     books: (item) => ({
-      meta: esc(item.author),
+      meta: esc(item.creator) + '  ·  ' + esc(TYPE_LABELS[item.type] || 'Book'),
       title: esc(item.title),
-      detail: esc(item.summary) + (!(item.image_urls && item.image_urls.length) ? '  ·  <span class="no-cover-note">No cover found — please upload one</span>' : ''),
+      detail: esc(item.summary) + (item.type === 'book' && !(item.image_urls && item.image_urls.length) ? '  ·  <span class="no-cover-note">No cover found — please upload one</span>' : ''),
     }),
   };
 

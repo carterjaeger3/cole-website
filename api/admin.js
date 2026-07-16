@@ -1,4 +1,4 @@
-import { COLLECTIONS, getCollection, addItem, updateItem, deleteItem } from '../lib/store.js';
+import { COLLECTIONS, MEDIA_TYPES, getCollection, addItem, updateItem, deleteItem } from '../lib/store.js';
 import { readBody } from '../lib/http.js';
 import { fetchBookCover } from '../lib/bookCover.js';
 
@@ -19,7 +19,14 @@ function cleanItem(collection, item) {
     case 'prayers':
       return { text: s(item.text), date: s(item.date) };
     case 'books':
-      return { title: s(item.title), author: s(item.author), summary: s(item.summary), content: s(item.content), image_urls: cleanImageUrls(item.image_urls) };
+      return {
+        title: s(item.title),
+        creator: s(item.creator),
+        summary: s(item.summary),
+        content: s(item.content),
+        image_urls: cleanImageUrls(item.image_urls),
+        type: MEDIA_TYPES.includes(item.type) ? item.type : 'book',
+      };
     case 'verses':
       return { text: s(item.text), ref: s(item.ref) };
     case 'newsletters':
@@ -31,13 +38,14 @@ function cleanItem(collection, item) {
   }
 }
 
-// If a book is being saved with no images at all, try to find a real cover
-// automatically. Mutates `cleaned.image_urls` in place when one is found.
-// Returns true only if a lookup was attempted and came up empty, so the
-// admin UI can show a "please upload one" note.
+// If an entry of type "book" is being saved with no images at all, try to
+// find a real cover automatically — this only makes sense for actual books,
+// not podcasts/videos/articles. Mutates `cleaned.image_urls` in place when
+// one is found. Returns true only if a lookup was attempted and came up
+// empty, so the admin UI can show a "please upload one" note.
 async function tryAutoCover(collection, cleaned) {
-  if (collection !== 'books' || (cleaned.image_urls && cleaned.image_urls.length)) return false;
-  const cover = await fetchBookCover(cleaned.title, cleaned.author);
+  if (collection !== 'books' || cleaned.type !== 'book' || (cleaned.image_urls && cleaned.image_urls.length)) return false;
+  const cover = await fetchBookCover(cleaned.title, cleaned.creator);
   if (cover) {
     cleaned.image_urls = [cover];
     return false;

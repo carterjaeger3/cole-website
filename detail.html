@@ -172,7 +172,7 @@
           <a href="/">Home</a>
           <a href="/#newsletters">Newsletters</a>
           <a href="/#travels">Mission Trips</a>
-          <a href="/#books">Books</a>
+          <a href="/#books">Books & Media</a>
           <a class="support-inline" href="https://www.spo.org" target="_blank" rel="noopener">Learn More About SPO ↗</a>
         </nav>
         <a class="support-link" href="https://www.spo.org" target="_blank" rel="noopener">Learn More About SPO ↗</a>
@@ -232,13 +232,22 @@
   }
 
   const TYPE_META = {
-    books:       { label: 'Book',         backHref: '/#books',       backLabel: 'Books' },
+    books:       { label: 'Book',         backHref: '/#books',       backLabel: 'Books & Media' },
     travels:     { label: 'Mission Trip', backHref: '/#travels',     backLabel: 'Mission Trips' },
     newsletters: { label: 'Newsletter',   backHref: '/#newsletters', backLabel: 'Newsletters' },
   };
 
+  // Books & Media covers more than books now — show the item's actual type
+  // (Book/Podcast/Video/Article) instead of the fixed "Book" label.
+  const MEDIA_TYPE_LABELS = { book: 'Book', podcast: 'Podcast', video: 'Video', article: 'Article' };
+
+  function eyebrowLabel(type, item){
+    if(type === 'books') return MEDIA_TYPE_LABELS[item.type] || 'Book';
+    return TYPE_META[type].label;
+  }
+
   function metaLine(type, item){
-    if(type === 'books') return item.author ? 'by ' + item.author : '';
+    if(type === 'books') return item.creator ? 'by ' + item.creator : '';
     if(type === 'travels') return item.date || '';
     if(type === 'newsletters') return item.month || '';
     return '';
@@ -263,7 +272,7 @@
     root.innerHTML =
       '<a class="detail-back" href="' + meta.backHref + '">← Back to ' + meta.backLabel + '</a>' +
       renderGallery(item.image_urls) +
-      '<div class="eyebrow">' + meta.label + '</div>' +
+      '<div class="eyebrow">' + esc(eyebrowLabel(type, item)) + '</div>' +
       '<h1 class="detail-title">' + esc(item.title) + '</h1>' +
       (line ? '<div class="detail-meta">' + esc(line) + '</div>' : '') +
       '<div class="detail-content">' + esc(item.content || item.summary || '') + '</div>' +
